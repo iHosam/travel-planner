@@ -12,6 +12,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -29,20 +30,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; }
         
         /* Custom scrollbar for the Gantt Chart */
         .gantt-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
-        .gantt-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .gantt-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .gantt-scroll::-webkit-scrollbar-track { background: var(--scroll-track, #f1f5f9); border-radius: 4px; }
+        .gantt-scroll::-webkit-scrollbar-thumb { background: var(--scroll-thumb, #cbd5e1); border-radius: 4px; }
+        .gantt-scroll::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover, #94a3b8); }
 
-        .sticky-col { position: sticky; left: 0; z-index: 20; background: white; border-right: 1px solid #e2e8f0; }
-        .sticky-header { position: sticky; top: 0; z-index: 10; background: white; border-bottom: 1px solid #e2e8f0; }
-        .sticky-corner { position: sticky; top: 0; left: 0; z-index: 30; background: white; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;}
+        .sticky-col { position: sticky; left: 0; z-index: 20; }
+        .sticky-header { position: sticky; top: 0; z-index: 10; }
+        .sticky-corner { position: sticky; top: 0; left: 0; z-index: 30; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -64,6 +65,8 @@
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
         const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
         const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+        const IconSun = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>;
+        const IconMoon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>;
 
         // --- Utility Functions ---
         const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -192,9 +195,11 @@
             }
         ];
 
+        // --- STREAMING_CHUNK:Rendering Quick Edit Modal component... ---
         const QuickEditModal = ({ config, segments, onClose, onUpdateSegment, onAddSegment }) => {
             const segment = config.type !== 'add-segment' ? segments.find(s => s.id === config.segmentId) : null;
             if (config.type !== 'add-segment' && !segment) return null;
+            const isCity = config.type === 'add-segment' ? formData?.type === 'city' : (segment?.type === 'city');
 
             const [formData, setFormData] = useState(() => {
                 if (config.type === 'edit-segment') {
@@ -209,7 +214,7 @@
                 }
             });
 
-            const isCity = config.type === 'add-segment' ? formData.type === 'city' : (segment?.type === 'city');
+            const currentIsCity = config.type === 'add-segment' ? formData.type === 'city' : isCity;
 
             const handleChange = (e) => {
                 const { name, value } = e.target;
@@ -245,7 +250,7 @@
                         endTime: formData.endTime,
                         price: formData.price ? Number(formData.price) : 0
                     };
-                    if (!isCity) {
+                    if (!currentIsCity) {
                         updates.method = formData.method;
                         updates.flightNumber = formData.flightNumber;
                     }
@@ -262,7 +267,7 @@
                         price: formData.price ? Number(formData.price) : 0,
                         activities: []
                     };
-                    if (!isCity) {
+                    if (!currentIsCity) {
                         newSeg.method = formData.method || 'flight';
                         newSeg.flightNumber = formData.flightNumber;
                     }
@@ -294,34 +299,34 @@
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-                            <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                                {config.type === 'edit-segment' ? <><IconEdit/> Edit {isCity ? 'Destination' : 'Transit'}</> : ''}
-                                {config.type === 'add-segment' ? <><IconPlus/> Add {isCity ? 'Destination' : 'Transit'}</> : ''}
+                    <div className="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                {config.type === 'edit-segment' ? <><IconEdit/> Edit {currentIsCity ? 'Destination' : 'Transit'}</> : ''}
+                                {config.type === 'add-segment' ? <><IconPlus/> Add {currentIsCity ? 'Destination' : 'Transit'}</> : ''}
                                 {config.type === 'edit-activity' ? <><IconEdit/> Edit Activity</> : ''}
                                 {config.type === 'add-activity' ? <><IconPlus/> Add Activity</> : ''}
                             </h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 bg-white border border-slate-200 rounded p-1 shadow-sm transition-colors"><IconX /></button>
+                            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1 shadow-sm transition-colors"><IconX /></button>
                         </div>
                         
                         <form onSubmit={handleSubmit} className="p-5">
                             {(config.type === 'edit-segment' || config.type === 'add-segment') && (
                                 <div className="grid grid-cols-2 gap-4">
                                     {config.type === 'add-segment' && (
-                                        <div className="col-span-2 flex gap-4 mb-2 border-b border-slate-200 pb-2">
-                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'city'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                                        <div className="col-span-2 flex gap-4 mb-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'city'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
                                                 Add Destination
                                             </button>
-                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'transit'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'transit'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
                                                 Add Travel / Transit
                                             </button>
                                         </div>
                                     )}
-                                    {!isCity && (
+                                    {!currentIsCity && (
                                         <div className="col-span-2 sm:col-span-1">
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Method</label>
-                                            <select name="method" value={formData.method || 'flight'} onChange={handleChange} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                            <select name="method" value={formData.method || 'flight'} onChange={handleChange} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
                                                 <option value="flight">Flight</option>
                                                 <option value="train">Train</option>
                                                 <option value="bus">Bus</option>
@@ -329,35 +334,35 @@
                                             </select>
                                         </div>
                                     )}
-                                    <div className={`col-span-2 ${!isCity ? 'sm:col-span-1' : ''}`}>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">{isCity ? 'City Name' : 'Route / Name'}</label>
-                                        <input name="name" value={formData.name || ''} onChange={handleChange} required className={`w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-${isCity ? 'primary' : 'secondary'}`} />
+                                    <div className={`col-span-2 ${!currentIsCity ? 'sm:col-span-1' : ''}`}>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{currentIsCity ? 'City Name' : 'Route / Name'}</label>
+                                        <input name="name" value={formData.name || ''} onChange={handleChange} required className={`w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
                                     </div>
                                     
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Start Date & Time</label>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Start Date & Time</label>
                                         <div className="flex gap-2">
-                                            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleChange} required className={`w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-${isCity ? 'primary' : 'secondary'}`} />
-                                            <input type="time" name="startTime" value={formData.startTime || ''} onChange={handleChange} className={`w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-${isCity ? 'primary' : 'secondary'} px-1`} />
+                                            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
+                                            <input type="time" name="startTime" value={formData.startTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'} px-1`} />
                                         </div>
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">End Date & Time</label>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">End Date & Time</label>
                                         <div className="flex gap-2">
-                                            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} required className={`w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-${isCity ? 'primary' : 'secondary'}`} />
-                                            <input type="time" name="endTime" value={formData.endTime || ''} onChange={handleChange} className={`w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-${isCity ? 'primary' : 'secondary'} px-1`} />
+                                            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
+                                            <input type="time" name="endTime" value={formData.endTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'} px-1`} />
                                         </div>
                                     </div>
 
-                                    {!isCity && (
+                                    {!currentIsCity && (
                                         <>
                                             <div className="col-span-2 sm:col-span-1">
-                                                <label className="block text-xs font-semibold text-slate-500 mb-1">Flight/Train Num</label>
-                                                <input name="flightNumber" value={formData.flightNumber || ''} onChange={handleChange} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Num</label>
+                                                <input name="flightNumber" value={formData.flightNumber || ''} onChange={handleChange} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                             </div>
                                             <div className="col-span-2 sm:col-span-1">
-                                                <label className="block text-xs font-semibold text-slate-500 mb-1">Price ($)</label>
-                                                <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price ($)</label>
+                                                <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                             </div>
                                         </>
                                     )}
@@ -367,30 +372,30 @@
                             {config.type.includes('activity') && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Activity Name</label>
-                                        <input name="name" value={formData.name || ''} onChange={handleChange} required placeholder="e.g. Museum Visit" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity Name</label>
+                                        <input name="name" value={formData.name || ''} onChange={handleChange} required placeholder="e.g. Museum Visit" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Date</label>
-                                        <input type="date" name="date" value={formData.date || ''} onChange={handleChange} min={segment.startDate} max={segment.endDate} required className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Date</label>
+                                        <input type="date" name="date" value={formData.date || ''} onChange={handleChange} min={segment.startDate} max={segment.endDate} required className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Time</label>
-                                        <input type="time" name="time" value={formData.time || ''} onChange={handleChange} min={formData.date === segment.startDate ? segment.startTime : undefined} max={formData.date === segment.endDate ? segment.endTime : undefined} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Time</label>
+                                        <input type="time" name="time" value={formData.time || ''} onChange={handleChange} min={formData.date === segment.startDate ? segment.startTime : undefined} max={formData.date === segment.endDate ? segment.endTime : undefined} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Price ($)</label>
-                                        <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} placeholder="0" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price ($)</label>
+                                        <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
                                     </div>
                                 </div>
                             )}
 
-                            <div className="mt-6 flex justify-end items-center gap-3 pt-4 border-t border-slate-100">
+                            <div className="mt-6 flex justify-end items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                                 {config.type === 'edit-activity' && (
                                     <button type="button" onClick={handleDeleteActivity} className="mr-auto text-red-500 text-sm font-semibold hover:text-red-700 flex items-center gap-1"><IconTrash/> Delete</button>
                                 )}
-                                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
-                                <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${((config.type === 'edit-segment' || config.type === 'add-segment') && !isCity) ? 'bg-secondary hover:bg-pink-600' : 'bg-primary hover:bg-indigo-700'}`}>
+                                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
+                                <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${((config.type === 'edit-segment' || config.type === 'add-segment') && !currentIsCity) ? 'bg-secondary hover:bg-pink-600' : 'bg-primary hover:bg-indigo-700'}`}>
                                     Save
                                 </button>
                             </div>
@@ -400,11 +405,21 @@
             );
         };
 
+        // --- STREAMING_CHUNK:Rendering main App component... ---
         const App = () => {
             const [segments, setSegments] = useState(initialSegments);
             const [isZoomedOut, setIsZoomedOut] = useState(false);
             const [modalConfig, setModalConfig] = useState(null); // State for Quick Edit Modal
+            const [isDarkMode, setIsDarkMode] = useState(false);
             const fileInputRef = React.useRef(null);
+
+            useEffect(() => {
+                if (isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [isDarkMode]);
 
             // Calculate overall timeline
             const { timeline, minDate, maxDate } = useMemo(() => {
@@ -611,7 +626,6 @@
                                 const actStart = formatICSDate(act.date, act.time);
                                 let actEnd = actStart;
                                 if (act.time) {
-                                    // Default to a 1-hour block for specific time events
                                     const endDate = new Date(`${act.date}T${act.time}`);
                                     endDate.setHours(endDate.getHours() + 1);
                                     const eDateStr = dateToString(endDate);
@@ -642,28 +656,31 @@
             return (
                 <div className="min-h-screen flex flex-col relative pb-32">
                     {/* Header */}
-                    <header className="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-40">
+                    <header className="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-40">
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <div className="bg-primary text-white p-2 rounded-lg"><IconPlane /></div>
-                            <h1 className="text-xl font-bold text-slate-800 tracking-tight">WanderPlan</h1>
+                            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">WanderPlan</h1>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                             <div className="flex items-center gap-2 mr-auto sm:mr-4">
                                 <input type="file" accept=".csv" ref={fileInputRef} onChange={handleImportCSV} className="hidden" />
-                                <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition-colors border border-slate-200">
-                                    <IconUpload /> Import
+                                <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md transition-colors border border-slate-200 dark:border-slate-700">
+                                    <IconUpload /> Import CSV
                                 </button>
-                                <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition-colors border border-slate-200">
-                                    <IconDownload /> CSV
+                                <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md transition-colors border border-slate-200 dark:border-slate-700">
+                                    <IconDownload /> Export CSV
                                 </button>
                                 <button onClick={handleExportICS} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-indigo-700 text-white rounded-md transition-colors shadow-sm">
                                     <IconCalendar /> Calendar
                                 </button>
+                                <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors border border-slate-200 dark:border-slate-700" title="Toggle Theme">
+                                    {isDarkMode ? <IconSun /> : <IconMoon />}
+                                </button>
                             </div>
-                            <div className="bg-slate-100 px-4 py-2 rounded-full text-sm font-semibold text-slate-600 flex items-center gap-2">
+                            <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
                                 <span>{totalDays} Days Total</span>
                             </div>
-                            <div className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-bold border border-emerald-200 flex items-center gap-1">
+                            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-4 py-2 rounded-full text-sm font-bold border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
                                 Total Cost: ${totalCost.toLocaleString()}
                             </div>
                         </div>
@@ -672,16 +689,16 @@
                     <main className="flex-grow p-6 flex flex-col gap-8 max-w-7xl mx-auto w-full">
                         
                         {/* Gantt Chart Section */}
-                        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h2 className="font-semibold text-slate-700 flex items-center gap-2">
+                        <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+                            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+                                <h2 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
                                     Trip Timeline
                                 </h2>
                                 {timeline.length > 0 && (
                                     <button 
                                         onClick={() => setIsZoomedOut(!isZoomedOut)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors shadow-sm font-medium"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-medium"
                                     >
                                         {isZoomedOut ? <><IconZoomIn /> Zoom In</> : <><IconZoomOut /> Zoom Out</>}
                                     </button>
@@ -689,7 +706,7 @@
                             </div>
                             
                             {timeline.length > 0 ? (
-                                <GanttChart timeline={timeline} segments={segments} isZoomedOut={isZoomedOut} onOpenModal={setModalConfig} />
+                                <GanttChart timeline={timeline} segments={segments} isZoomedOut={isZoomedOut} onOpenModal={setModalConfig} onAddSegment={addSegment} />
                             ) : (
                                 <div className="p-12 text-center text-slate-400">
                                     <IconMapPin className="mx-auto w-12 h-12 mb-3 opacity-50" />
@@ -724,10 +741,10 @@
             );
         };
 
-        const GanttChart = ({ timeline, segments, isZoomedOut, onOpenModal }) => {
+        // --- STREAMING_CHUNK:Rendering GanttChart component... ---
+        const GanttChart = ({ timeline, segments, isZoomedOut, onOpenModal, onAddSegment }) => {
             
             // Generate grid columns based on timeline
-            // When zoomed out, force columns to share available width completely (minmax(0, 1fr))
             const firstCol = isZoomedOut ? '100px' : '200px';
             const dayCols = isZoomedOut ? `repeat(${timeline.length}, minmax(0, 1fr))` : `repeat(${timeline.length}, minmax(140px, 1fr))`;
             const gridTemplateColumns = `${firstCol} ${dayCols}`;
@@ -742,17 +759,17 @@
             };
 
             return (
-                <div className={`overflow-x-auto gantt-scroll w-full bg-white relative ${isZoomedOut ? 'overflow-hidden' : ''}`}>
+                <div className={`overflow-x-auto gantt-scroll w-full bg-white dark:bg-slate-900 relative ${isZoomedOut ? 'overflow-hidden' : ''}`}>
                     <div className={`pb-6 ${isZoomedOut ? 'w-full' : 'min-w-max'}`} style={{ display: 'grid', gridTemplateColumns }}>
                         
                         {/* Header Row */}
-                        <div className={`sticky-corner ${isZoomedOut ? 'p-1.5 text-[10px]' : 'p-3 text-sm'} font-semibold text-slate-500 uppercase tracking-wider flex items-center overflow-hidden`}>
+                        <div className={`sticky-corner ${isZoomedOut ? 'p-1.5 text-[10px]' : 'p-3 text-sm'} font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center overflow-hidden bg-white dark:bg-slate-900 border-r border-b border-slate-200 dark:border-slate-800`}>
                             <span className="truncate">Destination</span>
                         </div>
                         {timeline.map((date, i) => (
-                            <div key={i} className={`sticky-header ${isZoomedOut ? 'p-1' : 'p-3'} border-r border-slate-100 flex flex-col justify-center items-center overflow-hidden`}>
-                                <span className={`text-[10px] sm:text-xs text-slate-400 font-medium uppercase truncate w-full text-center ${isZoomedOut ? 'text-[8px] sm:text-[9px]' : ''}`}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                <span className={`${isZoomedOut ? 'text-[9px] sm:text-[10px]' : 'text-sm'} font-bold text-slate-700 truncate w-full text-center`}>{formatDate(date)}</span>
+                            <div key={i} className={`sticky-header ${isZoomedOut ? 'p-1' : 'p-3'} border-r border-b border-slate-200 dark:border-slate-800 flex flex-col justify-center items-center overflow-hidden bg-white dark:bg-slate-900`}>
+                                <span className={`text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium uppercase truncate w-full text-center ${isZoomedOut ? 'text-[8px] sm:text-[9px]' : ''}`}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                <span className={`${isZoomedOut ? 'text-[9px] sm:text-[10px]' : 'text-sm'} font-bold text-slate-700 dark:text-slate-200 truncate w-full text-center`}>{formatDate(date)}</span>
                             </div>
                         ))}
 
@@ -764,11 +781,11 @@
                                 <React.Fragment key={segment.id}>
                                     {/* Left Sticky Column (Label) */}
                                     <div 
-                                        className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-100 flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-100 transition-colors group ${isTransit ? 'bg-slate-50/50' : 'bg-white'}`}
+                                        className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-r border-slate-200 dark:border-slate-800 flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group ${isTransit ? 'bg-slate-50/50 dark:bg-slate-900/40' : 'bg-white dark:bg-slate-900'}`}
                                         onClick={() => onOpenModal({ type: 'edit-segment', segmentId: segment.id })}
                                         title="Click to edit destination/transit"
                                     >
-                                        <div className={`flex items-center gap-1.5 font-semibold text-slate-800 ${isZoomedOut ? 'text-[10px] leading-tight' : ''} overflow-hidden w-full relative`}>
+                                        <div className={`flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-100 ${isZoomedOut ? 'text-[10px] leading-tight' : ''} overflow-hidden w-full relative`}>
                                             <span className={`shrink-0 ${isTransit ? "text-secondary" : "text-primary"} ${isZoomedOut ? 'scale-75 origin-left' : ''}`}>
                                                 {isTransit ? getTransitIcon(segment.method) : <IconMapPin />}
                                             </span>
@@ -776,21 +793,22 @@
                                             
                                             {/* Hover Edit Icon */}
                                             {!isZoomedOut && (
-                                                <span className="absolute right-0 opacity-0 group-hover:opacity-100 text-slate-400 bg-white/90 pl-1">
+                                                <span className="absolute right-0 opacity-0 group-hover:opacity-100 text-slate-400 bg-white/90 dark:bg-slate-900/90 pl-1">
                                                     <IconEdit />
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex flex-col mt-0.5 overflow-hidden w-full">
                                             {isTransit && segment.flightNumber && (
-                                                <span className={`text-slate-500 font-mono bg-slate-100 rounded w-max truncate max-w-full ${isZoomedOut ? 'text-[8px] px-1 py-0' : 'text-xs px-2 py-0.5 mb-1'}`}>
+                                                <span className={`text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 rounded w-max truncate max-w-full ${isZoomedOut ? 'text-[8px] px-1 py-0' : 'text-xs px-2 py-0.5 mb-1'}`}>
                                                     {segment.flightNumber}
                                                 </span>
                                             )}
-                                            {(segment.startTime || segment.endTime) && (
-                                                <span className={`text-slate-400 font-medium truncate w-full ${isZoomedOut ? 'text-[8px] mt-0.5' : 'text-xs'}`}>
-                                                    {segment.startTime ? formatTime(segment.startTime) : ''} 
-                                                    {segment.endTime ? ` - ${formatTime(segment.endTime)}` : ''}
+                                            {(segment.startDate || segment.endDate) && (
+                                                <span className={`text-slate-400 dark:text-slate-500 font-medium truncate w-full ${isZoomedOut ? 'text-[7px] mt-0.5' : 'text-[11px]'}`}>
+                                                    {formatDate(parseDate(segment.startDate))} {segment.startTime ? formatTime(segment.startTime) : ''} 
+                                                    {' - '}
+                                                    {formatDate(parseDate(segment.endDate))} {segment.endTime ? formatTime(segment.endTime) : ''}
                                                 </span>
                                             )}
                                         </div>
@@ -807,9 +825,9 @@
                                         return (
                                             <div key={`${segment.id}-${i}`} 
                                                  onClick={isWithinSegment && !isTransit ? () => onOpenModal({ type: 'add-activity', segmentId: segment.id, date: currentDateStr }) : undefined}
-                                                 className={`border-r border-b border-slate-100 relative min-h-[80px] overflow-hidden group
+                                                 className={`border-r border-b border-slate-100 dark:border-slate-800 relative min-h-[80px] overflow-hidden
                                                     ${isZoomedOut ? 'p-0.5' : 'p-2'}
-                                                    ${isWithinSegment ? (isTransit ? 'bg-pink-50/30' : 'bg-indigo-50/30 cursor-pointer hover:bg-indigo-100 transition-colors') : 'bg-slate-50/20'}
+                                                    ${isWithinSegment ? (isTransit ? 'bg-pink-50/20 dark:bg-pink-950/10' : 'bg-indigo-50/20 dark:bg-indigo-950/20 cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 transition-colors') : 'bg-slate-50/20 dark:bg-slate-950/20'}
                                                  `}
                                                  title={isWithinSegment && !isTransit && !isZoomedOut ? "Click empty area to add activity" : undefined}
                                             >
@@ -826,14 +844,14 @@
                                                             <div 
                                                                 key={act.id} 
                                                                 onClick={(e) => { e.stopPropagation(); onOpenModal({ type: 'edit-activity', segmentId: segment.id, activityId: act.id }); }}
-                                                                className={`bg-white border shadow-sm rounded overflow-hidden w-full cursor-pointer transition-all hover:shadow-md
-                                                                    ${isZoomedOut ? 'p-0.5 border-indigo-50 hover:border-primary/50' : 'p-1.5 border-indigo-100 hover:border-primary'}
+                                                                className={`bg-white dark:bg-slate-800 border shadow-sm rounded overflow-hidden w-full cursor-pointer transition-all hover:shadow-md
+                                                                    ${isZoomedOut ? 'p-0.5 border-indigo-50 dark:border-slate-700 hover:border-primary/50' : 'p-1.5 border-indigo-100 dark:border-slate-700 hover:border-primary'}
                                                                 `}
                                                                 title="Click to edit activity"
                                                             >
                                                                 {act.time && <div className={`text-primary font-bold truncate ${isZoomedOut ? 'mb-0 text-[8px]' : 'mb-0.5'}`}>{formatTime(act.time)}</div>}
-                                                                <div className={`font-medium text-slate-700 leading-tight truncate ${isZoomedOut ? 'text-[8px]' : ''}`}>{act.name}</div>
-                                                                {!isZoomedOut && act.price > 0 && <div className="text-indigo-500 font-semibold mt-0.5">${act.price}</div>}
+                                                                <div className={`font-medium text-slate-700 dark:text-slate-200 leading-tight truncate ${isZoomedOut ? 'text-[8px]' : ''}`}>{act.name}</div>
+                                                                {!isZoomedOut && act.price > 0 && <div className="text-indigo-500 dark:text-indigo-400 font-semibold mt-0.5">${act.price}</div>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -852,17 +870,16 @@
                             );
                         })}
 
-                        {}
-                        {/* New Add Segment Row */}
+                        {/* Add New City / Travel Row */}
                         <div 
-                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-100 flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 transition-colors bg-white text-primary group`}
+                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-r border-slate-200 dark:border-slate-800 flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors bg-white dark:bg-slate-900 text-primary group`}
                             onClick={() => {
                                 let startD = '';
                                 let startT = '';
                                 if (segments.length > 0) {
-                                    const last = segments[segments.length - 1];
-                                    startD = last.endDate || '';
-                                    startT = last.endTime || '';
+                                    const latestSeg = [...segments].sort((a, b) => new Date(`${b.endDate}T${b.endTime || '23:59'}`).getTime() - new Date(`${a.endDate}T${a.endTime || '23:59'}`).getTime())[0];
+                                    startD = latestSeg.endDate || '';
+                                    startT = latestSeg.endTime || '';
                                 } else {
                                     startD = dateToString(new Date());
                                 }
@@ -881,13 +898,14 @@
 
                         {/* Empty cells for the Add Row */}
                         {timeline.map((date, i) => (
-                            <div key={`empty-${i}`} className={`border-r border-b border-slate-100 bg-slate-50/20 min-h-[50px] ${isZoomedOut ? 'p-0.5' : 'p-2'}`}></div>
+                            <div key={`empty-${i}`} className={`border-r border-b border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/20 min-h-[50px] ${isZoomedOut ? 'p-0.5' : 'p-2'}`}></div>
                         ))}
                     </div>
                 </div>
             );
         };
 
+        // --- STREAMING_CHUNK:Rendering SegmentManager component... ---
         const SegmentManager = ({ segments, onAddSegment, onRemoveSegment, onUpdateSegment }) => {
             const [activeTab, setActiveTab] = useState('city'); // 'city' or 'transit'
             const [isAdding, setIsAdding] = useState(false);
@@ -904,12 +922,14 @@
 
             const handleOpenAddForm = () => {
                 if (segments.length > 0) {
-                    const lastSegment = segments[segments.length - 1];
-                    setStartDate(lastSegment.endDate || '');
-                    setStartTime(lastSegment.endTime || '');
+                    const latestSeg = [...segments].sort((a, b) => new Date(`${b.endDate}T${b.endTime || '23:59'}`).getTime() - new Date(`${a.endDate}T${a.endTime || '23:59'}`).getTime())[0];
+                    setStartDate(latestSeg.endDate || '');
+                    setStartTime(latestSeg.endTime || '');
+                    setEndDate(latestSeg.endDate || '');
                 } else {
                     const todayStr = dateToString(new Date());
                     setStartDate(todayStr);
+                    setEndDate(todayStr);
                 }
                 setIsAdding(true);
             };
@@ -945,7 +965,7 @@
             return (
                 <div className="space-y-6">
                     <div className="flex justify-between items-end mb-2">
-                        <h2 className="text-xl font-bold text-slate-800">Itinerary Details & Activities</h2>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Itinerary Details & Activities</h2>
                         {!isAdding && (
                             <button onClick={handleOpenAddForm} className="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
                                 <IconPlus /> Add to Itinerary
@@ -955,12 +975,12 @@
 
                     {/* Add Form */}
                     {isAdding && (
-                        <div className="bg-white p-5 rounded-2xl shadow-lg border border-indigo-100 relative animate-fade-in">
-                            <div className="flex gap-4 mb-5 border-b border-slate-200 pb-2">
-                                <button onClick={() => setActiveTab('city')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg border border-indigo-100 dark:border-slate-800 relative animate-fade-in">
+                            <div className="flex gap-4 mb-5 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <button onClick={() => setActiveTab('city')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
                                     Add Destination
                                 </button>
-                                <button onClick={() => setActiveTab('transit')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                                <button onClick={() => setActiveTab('transit')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
                                     Add Travel / Transit
                                 </button>
                             </div>
@@ -969,29 +989,29 @@
                                 {activeTab === 'city' ? (
                                     <>
                                         <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">City Name</label>
-                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Paris, France" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City Name</label>
+                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Paris, France" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Check-in Date & Time</label>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-in Date & Time</label>
                                             <div className="flex gap-2">
-                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Check-out Date & Time</label>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-out Date & Time</label>
                                             <div className="flex gap-2">
-                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
                                             </div>
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Method</label>
-                                            <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                            <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
                                                 <option value="flight">Flight</option>
                                                 <option value="train">Train</option>
                                                 <option value="bus">Bus</option>
@@ -999,36 +1019,36 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Route / Name</label>
-                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. London to Paris" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Route / Name</label>
+                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. London to Paris" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Departure Date & Time</label>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Departure Date & Time</label>
                                             <div className="flex gap-2">
-                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Arrival Date & Time</label>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Arrival Date & Time</label>
                                             <div className="flex gap-2">
-                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Flight/Train Number (Opt)</label>
-                                            <input type="text" value={flightNumber} onChange={e=>setFlightNumber(e.target.value)} placeholder="e.g. BA123" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
+                                            <input type="text" value={flightNumber} onChange={e=>setFlightNumber(e.target.value)} placeholder="e.g. BA123" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Total Cost ($)</label>
-                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Cost ($)</label>
+                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                         </div>
                                     </>
                                 )}
 
                                 <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
-                                    <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                                    <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
                                     <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${activeTab === 'city' ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
                                         Save {activeTab === 'city' ? 'Destination' : 'Transit'}
                                     </button>
@@ -1052,6 +1072,7 @@
             );
         };
 
+        // --- STREAMING_CHUNK:Rendering SegmentAccordion component... ---
         const SegmentAccordion = ({ segment, onRemove, onUpdate }) => {
             const [isOpen, setIsOpen] = useState(false);
             const isCity = segment.type === 'city';
@@ -1146,104 +1167,106 @@
 
             if (isEditing) {
                 return (
-                    <div className={`bg-white rounded-xl shadow-sm border p-5 ${isCity ? 'border-primary' : 'border-secondary'}`}>
-                        <form onSubmit={handleEditSave} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="col-span-1 md:col-span-2 lg:col-span-4 mb-2 border-b border-slate-100 pb-2">
-                                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                    <IconEdit /> Edit {isCity ? 'Destination' : 'Transit'}
-                                </h3>
-                            </div>
-                            {isCity ? (
-                                <>
-                                    <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">City Name</label>
-                                        <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Check-in Date & Time</label>
-                                        <div className="flex gap-2">
-                                            <input type="date" required value={editStartDate} onChange={e=>setEditStartDate(e.target.value)} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                            <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                    <div>
+                        <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border p-5 ${isCity ? 'border-primary' : 'border-secondary'}`}>
+                            <form onSubmit={handleEditSave} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="col-span-1 md:col-span-2 lg:col-span-4 mb-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                        <IconEdit /> Edit {isCity ? 'Destination' : 'Transit'}
+                                    </h3>
+                                </div>
+                                {isCity ? (
+                                    <>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City Name</label>
+                                            <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Check-out Date & Time</label>
-                                        <div className="flex gap-2">
-                                            <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                            <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-in Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editStartDate} onChange={e=>setEditStartDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
                                         </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Method</label>
-                                        <select value={editMethod} onChange={e=>setEditMethod(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary">
-                                            <option value="flight">Flight</option>
-                                            <option value="train">Train</option>
-                                            <option value="bus">Bus</option>
-                                            <option value="car">Car Rental</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Route / Name</label>
-                                        <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Departure Date & Time</label>
-                                        <div className="flex gap-2">
-                                            <input type="date" required value={editStartDate} onChange={e=>{setEditStartDate(e.target.value); if(!editEndDate) setEditEndDate(e.target.value);}} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                            <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-out Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Arrival Date & Time</label>
-                                        <div className="flex gap-2">
-                                            <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                            <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                            <select value={editMethod} onChange={e=>setEditMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                                <option value="flight">Flight</option>
+                                                <option value="train">Train</option>
+                                                <option value="bus">Bus</option>
+                                                <option value="car">Car Rental</option>
+                                            </select>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Flight/Train Number (Opt)</label>
-                                        <input type="text" value={editFlightNumber} onChange={e=>setEditFlightNumber(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Total Cost ($)</label>
-                                        <input type="number" min="0" value={editPrice} onChange={e=>setEditPrice(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                    </div>
-                                </>
-                            )}
-                            <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
-                                <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
-                                <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${isCity ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Route / Name</label>
+                                            <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Departure Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editStartDate} onChange={e=>{setEditStartDate(e.target.value); if(!editEndDate) setEditEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Arrival Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
+                                            <input type="text" value={editFlightNumber} onChange={e=>setEditFlightNumber(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Cost ($)</label>
+                                            <input type="number" min="0" value={editPrice} onChange={e=>setEditPrice(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                    </>
+                                )}
+                                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
+                                    <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
+                                    <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${isCity ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 );
             }
 
             return (
-                <div className={`bg-white rounded-xl shadow-sm border overflow-hidden ${isCity ? 'border-indigo-100' : 'border-pink-100'}`}>
+                <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border overflow-hidden ${isCity ? 'border-indigo-100 dark:border-slate-800' : 'border-pink-100 dark:border-slate-800'}`}>
                     {/* Header */}
-                    <div className={`p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${isCity ? '' : 'bg-pink-50/30'}`} onClick={() => setIsOpen(!isOpen)}>
+                    <div className={`p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${isCity ? '' : 'bg-pink-50/30 dark:bg-pink-950/20'}`} onClick={() => setIsOpen(!isOpen)}>
                         <div className="flex items-center gap-4">
                             <div className={`w-10 h-10 min-w-[40px] rounded-full flex items-center justify-center text-white shadow-sm ${isCity ? 'bg-primary' : 'bg-secondary'}`}>
                                 {isCity ? <IconMapPin /> : (segment.method === 'train' ? <IconTrain /> : (segment.method === 'car' ? <IconCar/> : <IconPlane />))}
                             </div>
                             <div>
-                                <h3 className="font-bold text-slate-800 text-lg">{segment.name}</h3>
-                                <p className="text-sm text-slate-500 font-medium flex items-center flex-wrap gap-1">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{segment.name}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center flex-wrap gap-1">
                                     <span>{formatDate(parseDate(segment.startDate))} {segment.startTime ? formatTime(segment.startTime) : ''}</span>
                                     {segment.startDate !== segment.endDate && <span> - {formatDate(parseDate(segment.endDate))}</span>}
                                     {segment.endTime && <span> {formatTime(segment.endTime)}</span>}
-                                    {!isCity && segment.flightNumber && <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-xs font-mono">{segment.flightNumber}</span>}
+                                    {!isCity && segment.flightNumber && <span className="ml-2 px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded text-xs font-mono">{segment.flightNumber}</span>}
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-3">
-                            {!isCity && segment.price > 0 && <span className="font-semibold text-slate-700 hidden sm:inline-block">${segment.price}</span>}
+                            {!isCity && segment.price > 0 && <span className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline-block">${segment.price}</span>}
                             <button onClick={(e) => { e.stopPropagation(); startEditing(); }} className="p-2 text-slate-400 hover:text-primary transition-colors" title="Edit">
                                 <IconEdit />
                             </button>
@@ -1258,9 +1281,9 @@
 
                     {/* Expandable Body */}
                     {isOpen && isCity && (
-                        <div className="border-t border-indigo-50 p-5 bg-slate-50/50">
+                        <div className="border-t border-indigo-50 dark:border-slate-800 p-5 bg-slate-50/50 dark:bg-slate-950/40">
                             <div className="mb-6">
-                                <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <h4 className="font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                     Planned Activities
                                 </h4>
@@ -1268,49 +1291,49 @@
                                 {segment.activities && segment.activities.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {segment.activities.map(act => (
-                                            <div key={act.id} className="bg-white border border-slate-200 rounded-lg p-3 flex justify-between items-center shadow-sm">
+                                            <div key={act.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex justify-between items-center shadow-sm">
                                                 <div>
                                                     <div className="text-xs font-bold text-primary mb-0.5">
                                                         {formatDate(parseDate(act.date))} {act.time && `• ${formatTime(act.time)}`}
                                                     </div>
-                                                    <div className="text-sm font-medium text-slate-800">{act.name}</div>
+                                                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200">{act.name}</div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    {act.price > 0 && <span className="text-sm font-bold text-slate-600">${act.price}</span>}
+                                                    {act.price > 0 && <span className="text-sm font-bold text-slate-600 dark:text-slate-400">${act.price}</span>}
                                                     <button onClick={() => removeActivity(act.id)} className="text-slate-400 hover:text-red-500"><IconTrash /></button>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-slate-500 italic">No activities planned yet.</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 italic">No activities planned yet.</p>
                                 )}
                             </div>
 
                             {/* Add Activity Form */}
-                            <form onSubmit={handleAddActivity} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Add New Activity</h5>
+                            <form onSubmit={handleAddActivity} className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Add New Activity</h5>
                                 <div className="flex flex-col md:flex-row gap-3 items-end">
                                     <div className="w-full md:w-1/5">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Date</label>
-                                        <select required value={actDate} onChange={e=>setActDate(e.target.value)} className="w-full border border-slate-300 rounded p-2 text-sm outline-none focus:border-primary">
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Date</label>
+                                        <select required value={actDate} onChange={e=>setActDate(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary">
                                             {validDates.map(d => <option key={d} value={d}>{formatDate(parseDate(d))}</option>)}
                                         </select>
                                     </div>
                                     <div className="w-full md:w-1/5">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Time</label>
-                                        <input type="time" value={actTime} onChange={e=>setActTime(e.target.value)} min={actDate === segment.startDate ? segment.startTime : undefined} max={actDate === segment.endDate ? segment.endTime : undefined} className="w-full border border-slate-300 rounded p-2 text-sm outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Time</label>
+                                        <input type="time" value={actTime} onChange={e=>setActTime(e.target.value)} min={actDate === segment.startDate ? segment.startTime : undefined} max={actDate === segment.endDate ? segment.endTime : undefined} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
                                     </div>
                                     <div className="w-full md:w-2/5">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Activity Description</label>
-                                        <input type="text" required value={actName} onChange={e=>setActName(e.target.value)} placeholder="e.g. Museum visit" className="w-full border border-slate-300 rounded p-2 text-sm outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity Description</label>
+                                        <input type="text" required value={actName} onChange={e=>setActName(e.target.value)} placeholder="e.g. Museum visit" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
                                     </div>
                                     <div className="w-full md:w-1/5">
-                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Price ($)</label>
-                                        <input type="number" min="0" value={actPrice} onChange={e=>setActPrice(e.target.value)} placeholder="0" className="w-full border border-slate-300 rounded p-2 text-sm outline-none focus:border-primary" />
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price ($)</label>
+                                        <input type="number" min="0" value={actPrice} onChange={e=>setActPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
                                     </div>
                                     <div className="w-full md:w-auto mt-2 md:mt-0">
-                                        <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium text-sm px-4 py-2 rounded transition-colors whitespace-nowrap">
+                                        <button type="submit" className="w-full bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white font-medium text-sm px-4 py-2 rounded transition-colors whitespace-nowrap">
                                             Add
                                         </button>
                                     </div>
