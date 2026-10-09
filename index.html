@@ -41,6 +41,10 @@
         .sticky-col { position: sticky; left: 0; z-index: 30; }
         .sticky-header { position: sticky; top: 0; z-index: 10; }
         .sticky-corner { position: sticky; top: 0; left: 0; z-index: 40; }
+
+        /* Explicit right-border color overrides to match activity entry top bars */
+        .border-r-primary { border-right-color: #4f46e5 !important; }
+        .border-r-secondary { border-right-color: #ec4899 !important; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
@@ -206,7 +210,6 @@
             const segment = config.type !== 'add-segment' ? segments.find(s => s.id === config.segmentId) : null;
             if (config.type !== 'add-segment' && !segment) return null;
 
-            // ✅ Declare state first
             const [formData, setFormData] = useState(() => {
                 if (config.type === 'edit-segment') {
                     return { ...segment };
@@ -221,7 +224,6 @@
                 return {};
             });
 
-            // ✅ Safe evaluation after state declaration
             const currentIsCity = config.type === 'add-segment' 
                 ? (formData.type === 'city') 
                 : (segment?.type === 'city');
@@ -290,8 +292,8 @@
                 } else if (config.type === 'add-activity') {
                     const newAct = { ...formData, id: generateId(), price: Number(formData.price)||0 };
                     const updatedActivities = [...(segment.activities || []), newAct].sort((a, b) => 
-                        new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime()
-                    );
+                        new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime())
+                    ;
                     onUpdateSegment(segment.id, { activities: updatedActivities });
                 }
                 onClose();
@@ -769,7 +771,7 @@
                     <div className={`pb-6 ${isZoomedOut ? 'w-full' : 'min-w-max'}`} style={{ display: 'grid', gridTemplateColumns }}>
                         
                         {/* Header Row */}
-                        <div className={`sticky-corner ${isZoomedOut ? 'p-1.5 text-[10px]' : 'p-3 text-sm'} font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center overflow-hidden bg-white dark:bg-slate-900 border-r-4 border-primary border-b border-slate-200 dark:border-slate-800`}>
+                        <div className={`sticky-corner ${isZoomedOut ? 'p-1.5 text-[10px]' : 'p-3 text-sm'} font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center overflow-hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 border-r-4 border-r-primary`}>
                             <span className="truncate">Destination</span>
                         </div>
                         {timeline.map((date, i) => (
@@ -787,7 +789,7 @@
                                 <React.Fragment key={segment.id}>
                                     {/* Left Sticky Column (Label) */}
                                     <div 
-                                        className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-200 dark:border-slate-800 border-r-4 ${isTransit ? 'border-secondary' : 'border-primary'} flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group ${isTransit ? 'bg-slate-50/50 dark:bg-slate-900/40' : 'bg-white dark:bg-slate-900'}`}
+                                        className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-200 dark:border-slate-800 border-r-4 ${isTransit ? 'border-r-secondary' : 'border-r-primary'} flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group ${isTransit ? 'bg-slate-50/50 dark:bg-slate-900/40' : 'bg-white dark:bg-slate-900'}`}
                                         onClick={() => onOpenModal({ type: 'edit-segment', segmentId: segment.id })}
                                         title="Click to edit destination/transit"
                                     >
@@ -867,7 +869,7 @@
 
                         {/* Add New City / Travel Row */}
                         <div 
-                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-200 dark:border-slate-800 border-r-4 border-primary flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors bg-white dark:bg-slate-900 text-primary group`}
+                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-200 dark:border-slate-800 border-r-4 border-r-primary flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors bg-white dark:bg-slate-900 text-primary group`}
                             onClick={() => {
                                 let startD = '';
                                 let startT = '';
