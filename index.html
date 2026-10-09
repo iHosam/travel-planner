@@ -192,14 +192,15 @@
             }
         ];
 
-        const QuickEditModal = ({ config, segments, onClose, onUpdateSegment }) => {
-            const segment = segments.find(s => s.id === config.segmentId);
-            if (!segment) return null;
-            const isCity = segment.type === 'city';
+        const QuickEditModal = ({ config, segments, onClose, onUpdateSegment, onAddSegment }) => {
+            const segment = config.type !== 'add-segment' ? segments.find(s => s.id === config.segmentId) : null;
+            if (config.type !== 'add-segment' && !segment) return null;
 
             const [formData, setFormData] = useState(() => {
                 if (config.type === 'edit-segment') {
                     return { ...segment };
+                } else if (config.type === 'add-segment') {
+                    return { type: 'city', name: '', startDate: config.startDate, startTime: config.startTime, endDate: config.startDate, endTime: '', method: 'flight', flightNumber: '', price: '' };
                 } else if (config.type === 'edit-activity') {
                     const act = segment.activities?.find(a => a.id === config.activityId) || {};
                     return { ...act };
@@ -207,6 +208,8 @@
                     return { date: config.date, time: '', name: '', price: '' };
                 }
             });
+
+            const isCity = config.type === 'add-segment' ? formData.type === 'city' : (segment?.type === 'city');
 
             const handleChange = (e) => {
                 const { name, value } = e.target;
@@ -247,6 +250,23 @@
                         updates.flightNumber = formData.flightNumber;
                     }
                     onUpdateSegment(segment.id, updates);
+                } else if (config.type === 'add-segment') {
+                    const newSeg = {
+                        id: generateId(),
+                        type: formData.type,
+                        name: formData.name,
+                        startDate: formData.startDate,
+                        startTime: formData.startTime,
+                        endDate: formData.endDate,
+                        endTime: formData.endTime,
+                        price: formData.price ? Number(formData.price) : 0,
+                        activities: []
+                    };
+                    if (!isCity) {
+                        newSeg.method = formData.method || 'flight';
+                        newSeg.flightNumber = formData.flightNumber;
+                    }
+                    onAddSegment(newSeg);
                 } else if (config.type === 'edit-activity') {
                     const updatedActivities = segment.activities.map(a => 
                         a.id === config.activityId ? { ...a, ...formData, price: Number(formData.price)||0 } : a
@@ -278,6 +298,7 @@
                         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
                             <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
                                 {config.type === 'edit-segment' ? <><IconEdit/> Edit {isCity ? 'Destination' : 'Transit'}</> : ''}
+                                {config.type === 'add-segment' ? <><IconPlus/> Add {isCity ? 'Destination' : 'Transit'}</> : ''}
                                 {config.type === 'edit-activity' ? <><IconEdit/> Edit Activity</> : ''}
                                 {config.type === 'add-activity' ? <><IconPlus/> Add Activity</> : ''}
                             </h3>
@@ -285,8 +306,18 @@
                         </div>
                         
                         <form onSubmit={handleSubmit} className="p-5">
-                            {config.type === 'edit-segment' && (
+                            {(config.type === 'edit-segment' || config.type === 'add-segment') && (
                                 <div className="grid grid-cols-2 gap-4">
+                                    {config.type === 'add-segment' && (
+                                        <div className="col-span-2 flex gap-4 mb-2 border-b border-slate-200 pb-2">
+                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'city'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                                                Add Destination
+                                            </button>
+                                            <button type="button" onClick={() => setFormData(prev => ({...prev, type: 'transit'}))} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${formData.type === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+                                                Add Travel / Transit
+                                            </button>
+                                        </div>
+                                    )}
                                     {!isCity && (
                                         <div className="col-span-2 sm:col-span-1">
                                             <label className="block text-xs font-semibold text-slate-500 mb-1">Method</label>
@@ -359,7 +390,7 @@
                                     <button type="button" onClick={handleDeleteActivity} className="mr-auto text-red-500 text-sm font-semibold hover:text-red-700 flex items-center gap-1"><IconTrash/> Delete</button>
                                 )}
                                 <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
-                                <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${(config.type === 'edit-segment' && !isCity) ? 'bg-secondary hover:bg-pink-600' : 'bg-primary hover:bg-indigo-700'}`}>
+                                <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${((config.type === 'edit-segment' || config.type === 'add-segment') && !isCity) ? 'bg-secondary hover:bg-pink-600' : 'bg-primary hover:bg-indigo-700'}`}>
                                     Save
                                 </button>
                             </div>
@@ -681,11 +712,12 @@
                     {/* Interactive Modal */}
                     {modalConfig && (
                         <QuickEditModal 
-                            key={`${modalConfig.type}-${modalConfig.segmentId}-${modalConfig.activityId||''}`}
+                            key={`${modalConfig.type}-${modalConfig.segmentId || 'new'}-${modalConfig.activityId||''}`}
                             config={modalConfig}
                             segments={segments}
                             onClose={() => setModalConfig(null)}
                             onUpdateSegment={updateSegment}
+                            onAddSegment={addSegment}
                         />
                     )}
                 </div>
@@ -819,6 +851,38 @@
                                 </React.Fragment>
                             );
                         })}
+
+                        {}
+                        {/* New Add Segment Row */}
+                        <div 
+                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-100 flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 transition-colors bg-white text-primary group`}
+                            onClick={() => {
+                                let startD = '';
+                                let startT = '';
+                                if (segments.length > 0) {
+                                    const last = segments[segments.length - 1];
+                                    startD = last.endDate || '';
+                                    startT = last.endTime || '';
+                                } else {
+                                    startD = dateToString(new Date());
+                                }
+                                onOpenModal({ type: 'add-segment', startDate: startD, startTime: startT });
+                            }}
+                            title="Add new city / travel plan"
+                        >
+                            <div className={`flex items-center gap-2 font-semibold ${isZoomedOut ? 'text-[10px]' : 'text-sm'}`}>
+                                <span className={`shrink-0 bg-primary/10 text-primary rounded ${isZoomedOut ? 'p-0.5' : 'p-1'}`}>
+                                    <IconPlus />
+                                </span>
+                                {!isZoomedOut && <span className="truncate">Add new city / travel plan</span>}
+                                {isZoomedOut && <span className="truncate">Add Plan</span>}
+                            </div>
+                        </div>
+
+                        {/* Empty cells for the Add Row */}
+                        {timeline.map((date, i) => (
+                            <div key={`empty-${i}`} className={`border-r border-b border-slate-100 bg-slate-50/20 min-h-[50px] ${isZoomedOut ? 'p-0.5' : 'p-2'}`}></div>
+                        ))}
                     </div>
                 </div>
             );
