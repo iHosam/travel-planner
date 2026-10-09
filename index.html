@@ -140,71 +140,54 @@
 
         const initialSegments = [
             { 
-                id: '1', type: 'city', name: 'Beijing', 
-                startDate: '2026-10-25', startTime: '14:00', 
-                endDate: '2026-10-29', endTime: '08:00', 
+                id: '1', type: 'city', name: 'Tokyo', 
+                startDate: '2026-10-15', startTime: '14:00', 
+                endDate: '2026-10-20', endTime: '08:00', 
                 activities: [
-                    { id: 'b1', date: '2026-10-25', time: '16:00', name: 'Hotel Check-in & Wangfujing Street', price: 0 },
-                    { id: 'b2', date: '2026-10-26', time: '09:00', name: 'Forbidden City & Tiananmen Square', price: 15 },
-                    { id: 'b3', date: '2026-10-26', time: '19:00', name: 'Peking Duck Dinner at Quanjude', price: 40 },
-                    { id: 'b4', date: '2026-10-27', time: '08:00', name: 'Universal Studios Beijing', price: 90 },
-                    { id: 'b5', date: '2026-10-28', time: '08:00', name: 'Mutianyu Great Wall Tour', price: 60 },
+                    { id: 't1', date: '2026-10-15', time: '16:00', name: 'Arrival & Shinjuku Neon Lights', price: 0 },
+                    { id: 't2', date: '2026-10-16', time: '10:00', name: 'Shibuya Crossing & Meiji Shrine', price: 15 },
+                    { id: 't3', date: '2026-10-17', time: '11:00', name: 'Akihabara Electronics & Anime', price: 40 },
+                    { id: 't4', date: '2026-10-18', time: '09:00', name: 'Senso-ji Temple & Tokyo Skytree', price: 25 },
+                    { id: 't5', date: '2026-10-19', time: '08:30', name: 'Tsukiji Outer Market & Ginza Shopping', price: 60 },
                 ] 
             },
             { 
-                id: '2', type: 'transit', method: 'train', name: 'Beijing to Shanghai', flightNumber: 'G5',
-                startDate: '2026-10-29', startTime: '09:00', 
-                endDate: '2026-10-29', endTime: '13:30', price: 90 
+                id: '2', type: 'transit', method: 'train', name: 'Tokyo to Kyoto', flightNumber: 'Nozomi 215',
+                startDate: '2026-10-20', startTime: '09:00', 
+                endDate: '2026-10-20', endTime: '11:15', price: 95 
             },
             { 
-                id: '3', type: 'city', name: 'Shanghai', 
-                startDate: '2026-10-29', startTime: '15:00', 
-                endDate: '2026-11-02', endTime: '10:00', 
+                id: '3', type: 'city', name: 'Kyoto', 
+                startDate: '2026-10-20', startTime: '12:00', 
+                endDate: '2026-10-24', endTime: '09:00', 
                 activities: [
-                    { id: 's1', date: '2026-10-29', time: '19:00', name: 'The Bund & Huangpu River Cruise', price: 30 },
-                    { id: 's2', date: '2026-10-30', time: '10:00', name: 'Yu Garden & City God Temple', price: 10 },
-                    { id: 's3', date: '2026-10-30', time: '15:00', name: 'Shanghai Tower Observation Deck', price: 25 },
-                    { id: 's4', date: '2026-10-31', time: '09:00', name: 'Shanghai Disneyland', price: 120 },
-                    { id: 's5', date: '2026-11-01', time: '11:00', name: 'French Concession Walking Tour', price: 0 },
+                    { id: 'k1', date: '2026-10-20', time: '14:00', name: 'Kinkaku-ji (Golden Pavilion)', price: 10 },
+                    { id: 'k2', date: '2026-10-21', time: '07:30', name: 'Fushimi Inari Taisha Shrine', price: 0 },
+                    { id: 'k3', date: '2026-10-22', time: '08:00', name: 'Arashiyama Bamboo Grove & Monkey Park', price: 12 },
+                    { id: 'k4', date: '2026-10-23', time: '18:00', name: 'Gion District Traditional Walk & Dinner', price: 80 },
                 ] 
             },
             { 
-                id: '4', type: 'transit', method: 'flight', name: 'Shanghai to Shenzhen', flightNumber: 'MU5331',
-                startDate: '2026-11-02', startTime: '13:00', 
-                endDate: '2026-11-02', endTime: '15:30', price: 150 
+                id: '4', type: 'transit', method: 'bus', name: 'Kyoto to Osaka', flightNumber: 'Keihan Express Bus',
+                startDate: '2026-10-24', startTime: '10:00', 
+                endDate: '2026-10-24', endTime: '11:15', price: 15 
             },
             { 
-                id: '5', type: 'city', name: 'Shenzhen', 
-                startDate: '2026-11-02', startTime: '17:00', 
-                endDate: '2026-11-06', endTime: '09:00', 
+                id: '5', type: 'city', name: 'Osaka', 
+                startDate: '2026-10-24', startTime: '12:00', 
+                endDate: '2026-10-29', endTime: '11:00', 
                 activities: [
-                    { id: 'sz1', date: '2026-11-02', time: '19:30', name: 'OCT Harbour Light Show & Dinner', price: 40 },
-                    { id: 'sz2', date: '2026-11-03', time: '09:30', name: 'Shenzhen Happy Valley', price: 40 },
-                    { id: 'sz3', date: '2026-11-04', time: '10:00', name: 'Window of the World Theme Park', price: 35 },
-                    { id: 'sz4', date: '2026-11-05', time: '14:00', name: 'Huaqiangbei Electronics Market', price: 0 },
+                    { id: 'o1', date: '2026-10-24', time: '18:00', name: 'Dotonbori Street Food Tour', price: 50 },
+                    { id: 'o2', date: '2026-10-25', time: '08:00', name: 'Universal Studios Japan & Nintendo World', price: 110 },
+                    { id: 'o3', date: '2026-10-26', time: '10:00', name: 'Osaka Castle & Nishinomaru Garden', price: 15 },
+                    { id: 'o4', date: '2026-10-27', time: '11:00', name: 'Umeda Sky Building Observatory', price: 20 },
+                    { id: 'o5', date: '2026-10-28', time: '09:00', name: 'Day Trip: Nara Deer Park & Todai-ji', price: 35 },
                 ] 
             },
             { 
-                id: '6', type: 'transit', method: 'train', name: 'Shenzhen to Guangzhou', flightNumber: 'G6224',
-                startDate: '2026-11-06', startTime: '10:00', 
-                endDate: '2026-11-06', endTime: '10:40', price: 15 
-            },
-            { 
-                id: '7', type: 'city', name: 'Guangzhou', 
-                startDate: '2026-11-06', startTime: '12:00', 
-                endDate: '2026-11-10', endTime: '12:00', 
-                activities: [
-                    { id: 'gz1', date: '2026-11-06', time: '15:00', name: 'Shamian Island Architecture Walk', price: 0 },
-                    { id: 'gz2', date: '2026-11-06', time: '20:00', name: 'Pearl River Night Cruise', price: 20 },
-                    { id: 'gz3', date: '2026-11-07', time: '09:00', name: 'Chimelong Safari Park', price: 45 },
-                    { id: 'gz4', date: '2026-11-08', time: '10:00', name: 'Chimelong Paradise', price: 35 },
-                    { id: 'gz5', date: '2026-11-09', time: '11:00', name: 'Chen Clan Ancestral Hall & Shopping', price: 10 },
-                ] 
-            },
-            { 
-                id: '8', type: 'transit', method: 'flight', name: 'Guangzhou to Riyadh', flightNumber: 'SV885',
-                startDate: '2026-11-10', startTime: '15:00', 
-                endDate: '2026-11-10', endTime: '21:00', price: 650 
+                id: '6', type: 'transit', method: 'flight', name: 'Osaka to Riyadh', flightNumber: 'EK317',
+                startDate: '2026-10-29', startTime: '14:00', 
+                endDate: '2026-10-29', endTime: '22:30', price: 850 
             }
         ];
 
