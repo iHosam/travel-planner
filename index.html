@@ -6,8 +6,8 @@
     <title>WanderPlan - Pro Travel Itinerary</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
@@ -52,7 +52,8 @@
         // --- SVG Icons ---
         const IconPlane = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5 5-3 3-3-.9L3 17l4.5 1.5L9 23l1.9-2-.9-3 3-3 5 5c.4-.2.7-.6.6-1.1z"/></svg>;
         const IconTrain = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h0"/><path d="M16 15h0"/></svg>;
-        const IconMapPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        const IconBus = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M8 15h.01"/><path d="M16 15h.01"/><path d="m6 19-2 2"/><path d="m18 21-2-2"/></svg>;
+        const IconMapPin = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
         const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
         const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
         const IconCar = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>;
@@ -68,11 +69,12 @@
         const IconMoon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>;
 
         // --- Utility Functions ---
-        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const generateId = () => Math.random().toString(36).substring(2, 11);
         
         const parseDate = (dateStr) => {
+            if (!dateStr) return new Date();
             const [y, m, d] = dateStr.split('-');
-            return new Date(y, m - 1, d);
+            return new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), 12, 0, 0);
         };
 
         const formatDate = (date) => {
@@ -82,7 +84,11 @@
         const getDaysArray = (start, end) => {
             const arr = [];
             let dt = new Date(start);
-            while (dt <= end) {
+            dt.setHours(12, 0, 0, 0);
+            const targetEnd = new Date(end);
+            targetEnd.setHours(12, 0, 0, 0);
+
+            while (dt <= targetEnd) {
                 arr.push(new Date(dt));
                 dt.setDate(dt.getDate() + 1);
             }
@@ -145,6 +151,7 @@
                 id: '1', type: 'city', name: 'Tokyo', 
                 startDate: '2026-10-15', startTime: '14:00', 
                 endDate: '2026-10-20', endTime: '08:00', 
+                price: 0,
                 activities: [
                     { id: 't1', date: '2026-10-15', time: '16:00', name: 'Arrival & Shinjuku Neon Lights', price: 0 },
                     { id: 't2', date: '2026-10-16', time: '10:00', name: 'Shibuya Crossing & Meiji Shrine', price: 15 },
@@ -162,6 +169,7 @@
                 id: '3', type: 'city', name: 'Kyoto', 
                 startDate: '2026-10-20', startTime: '12:00', 
                 endDate: '2026-10-24', endTime: '09:00', 
+                price: 0,
                 activities: [
                     { id: 'k1', date: '2026-10-20', time: '14:00', name: 'Kinkaku-ji (Golden Pavilion)', price: 10 },
                     { id: 'k2', date: '2026-10-21', time: '07:30', name: 'Fushimi Inari Taisha Shrine', price: 0 },
@@ -178,6 +186,7 @@
                 id: '5', type: 'city', name: 'Osaka', 
                 startDate: '2026-10-24', startTime: '12:00', 
                 endDate: '2026-10-29', endTime: '11:00', 
+                price: 0,
                 activities: [
                     { id: 'o1', date: '2026-10-24', time: '18:00', name: 'Dotonbori Street Food Tour', price: 50 },
                     { id: 'o2', date: '2026-10-25', time: '08:00', name: 'Universal Studios Japan & Nintendo World', price: 110 },
@@ -196,22 +205,26 @@
         const QuickEditModal = ({ config, segments, onClose, onUpdateSegment, onAddSegment }) => {
             const segment = config.type !== 'add-segment' ? segments.find(s => s.id === config.segmentId) : null;
             if (config.type !== 'add-segment' && !segment) return null;
-            const isCity = config.type === 'add-segment' ? formData?.type === 'city' : (segment?.type === 'city');
 
+            // ✅ Declare state first
             const [formData, setFormData] = useState(() => {
                 if (config.type === 'edit-segment') {
                     return { ...segment };
                 } else if (config.type === 'add-segment') {
                     return { type: 'city', name: '', startDate: config.startDate, startTime: config.startTime, endDate: config.startDate, endTime: '', method: 'flight', flightNumber: '', price: '' };
                 } else if (config.type === 'edit-activity') {
-                    const act = segment.activities?.find(a => a.id === config.activityId) || {};
+                    const act = segment?.activities?.find(a => a.id === config.activityId) || {};
                     return { ...act };
                 } else if (config.type === 'add-activity') {
                     return { date: config.date, time: '', name: '', price: '' };
                 }
+                return {};
             });
 
-            const currentIsCity = config.type === 'add-segment' ? formData.type === 'city' : isCity;
+            // ✅ Safe evaluation after state declaration
+            const currentIsCity = config.type === 'add-segment' 
+                ? (formData.type === 'city') 
+                : (segment?.type === 'city');
 
             const handleChange = (e) => {
                 const { name, value } = e.target;
@@ -292,6 +305,8 @@
                 }
             };
 
+            const focusBorderClass = currentIsCity ? 'focus:border-primary' : 'focus:border-secondary';
+
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}>
                     <div className="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in" onClick={e => e.stopPropagation()}>
@@ -331,25 +346,25 @@
                                     )}
                                     <div className={`col-span-2 ${!currentIsCity ? 'sm:col-span-1' : ''}`}>
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{currentIsCity ? 'City Name' : 'Route / Name'}</label>
-                                        <input name="name" value={formData.name || ''} onChange={handleChange} required className={`w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
+                                        <input name="name" value={formData.name || ''} onChange={handleChange} required className={`w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${focusBorderClass}`} />
                                     </div>
                                     
                                     <div className="col-span-2">
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Start Date & Time</label>
                                         <div className="flex gap-2">
-                                            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
-                                            <input type="time" name="startTime" value={formData.startTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'} px-1`} />
+                                            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${focusBorderClass}`} />
+                                            <input type="time" name="startTime" value={formData.startTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${focusBorderClass} px-1`} />
                                         </div>
                                     </div>
                                     <div className="col-span-2">
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">End Date & Time</label>
                                         <div className="flex gap-2">
-                                            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'}`} />
-                                            <input type="time" name="endTime" value={formData.endTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-${currentIsCity ? 'primary' : 'secondary'} px-1`} />
+                                            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} required className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${focusBorderClass}`} />
+                                            <input type="time" name="endTime" value={formData.endTime || ''} onChange={handleChange} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${focusBorderClass} px-1`} />
                                         </div>
                                     </div>
 
-                                    {!currentIsCity && (
+                                    {!currentIsCity ? (
                                         <>
                                             <div className="col-span-2 sm:col-span-1">
                                                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Num</label>
@@ -360,6 +375,11 @@
                                                 <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
                                             </div>
                                         </>
+                                    ) : (
+                                        <div className="col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Accommodation Cost ($)</label>
+                                            <input type="number" min="0" name="price" value={formData.price || ''} onChange={handleChange} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -601,8 +621,8 @@
                 };
 
                 segments.forEach(seg => {
-                    const segStart = formatICSDate(seg.startDate, seg.startTime);
-                    const segEnd = formatICSDate(seg.endDate, seg.endTime || seg.startTime || '2359');
+                    const segStart = formatICSDate(seg.startDate, seg.startTime || '00:00');
+                    const segEnd = formatICSDate(seg.endDate, seg.endTime || '23:59');
                     
                     if (seg.type === 'transit') {
                         const flightInfo = seg.flightNumber ? ` (${seg.flightNumber})` : '';
@@ -612,7 +632,7 @@
                         
                         if (seg.activities) {
                             seg.activities.forEach(act => {
-                                const actStart = formatICSDate(act.date, act.time);
+                                const actStart = formatICSDate(act.date, act.time || '00:00');
                                 let actEnd = actStart;
                                 if (act.time) {
                                     const endDate = new Date(`${act.date}T${act.time}`);
@@ -621,7 +641,7 @@
                                     const eTimeStr = String(endDate.getHours()).padStart(2, '0') + ':' + String(endDate.getMinutes()).padStart(2, '0');
                                     actEnd = formatICSDate(eDateStr, eTimeStr);
                                 } else {
-                                    actEnd = formatICSDate(act.date, '2359'); 
+                                    actEnd = formatICSDate(act.date, '23:59'); 
                                 }
                                 
                                 addEvent(act.id, actStart, actEnd, act.name, `Activity in ${seg.name}\\nPrice: $${act.price}`, seg.name);
@@ -739,13 +759,13 @@
                 switch(method) {
                     case 'train': return <IconTrain className="w-5 h-5 text-secondary" />;
                     case 'car': return <IconCar className="w-5 h-5 text-amber-500" />;
-                    case 'bus': return <IconTrain className="w-5 h-5 text-emerald-500" />;
+                    case 'bus': return <IconBus className="w-5 h-5 text-emerald-500" />;
                     default: return <IconPlane className="w-5 h-5 text-secondary" />;
                 }
             };
 
             return (
-                <div className={`overflow-x-auto gantt-scroll w-full bg-white dark:bg-slate-900 relative ${isZoomedOut ? 'overflow-hidden' : ''}`}>
+                <div className={`overflow-x-auto gantt-scroll w-full bg-white dark:bg-slate-900 relative`}>
                     <div className={`pb-6 ${isZoomedOut ? 'w-full' : 'min-w-max'}`} style={{ display: 'grid', gridTemplateColumns }}>
                         
                         {/* Header Row */}
@@ -818,4 +838,510 @@
                                                     <div className={`flex flex-col gap-1 w-full relative z-20 ${isZoomedOut ? 'mt-1' : 'mt-2'}`}>
                                                         {dayActivities.map(act => (
                                                             <div 
-                                                                key={act.id}
+                                                                key={act.id} 
+                                                                onClick={(e) => { e.stopPropagation(); onOpenModal({ type: 'edit-activity', segmentId: segment.id, activityId: act.id }); }}
+                                                                className={`bg-white dark:bg-slate-800 border shadow-sm rounded overflow-hidden w-full cursor-pointer transition-all hover:shadow-md
+                                                                    ${isZoomedOut ? 'p-0.5 border-indigo-50 dark:border-slate-700 hover:border-primary/50' : 'p-1.5 border-indigo-100 dark:border-slate-700 hover:border-primary'}
+                                                                `}
+                                                                title="Click to edit activity"
+                                                            >
+                                                                {act.time && <div className={`text-primary font-bold truncate ${isZoomedOut ? 'mb-0 text-[8px]' : 'mb-0.5'}`}>{formatTime(act.time)}</div>}
+                                                                <div className={`font-medium text-slate-700 dark:text-slate-200 leading-tight truncate ${isZoomedOut ? 'text-[8px]' : ''}`}>{act.name}</div>
+                                                                {!isZoomedOut && act.price > 0 && <div className="text-indigo-500 dark:text-indigo-400 font-semibold mt-0.5">${act.price}</div>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {isWithinSegment && isTransit && (
+                                                    <div className="h-full flex items-center justify-center opacity-80">
+                                                        {getTransitIcon(segment.method)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </React.Fragment>
+                            );
+                        })}
+
+                        {/* Add New City / Travel Row */}
+                        <div 
+                            className={`sticky-col ${isZoomedOut ? 'p-1.5' : 'p-4'} border-b border-slate-200 dark:border-slate-800 border-r-4 border-primary flex flex-col justify-center overflow-hidden cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors bg-white dark:bg-slate-900 text-primary group`}
+                            onClick={() => {
+                                let startD = '';
+                                let startT = '';
+                                if (segments.length > 0) {
+                                    const latestSeg = [...segments].sort((a, b) => new Date(`${b.endDate}T${b.endTime || '23:59'}`).getTime() - new Date(`${a.endDate}T${a.endTime || '23:59'}`).getTime())[0];
+                                    startD = latestSeg.endDate || '';
+                                    startT = latestSeg.endTime || '';
+                                } else {
+                                    startD = dateToString(new Date());
+                                }
+                                onOpenModal({ type: 'add-segment', startDate: startD, startTime: startT });
+                            }}
+                            title="Add new city / travel plan"
+                        >
+                            <div className={`flex items-center gap-2 font-semibold ${isZoomedOut ? 'text-[10px]' : 'text-sm'}`}>
+                                <span className={`shrink-0 bg-primary/10 text-primary rounded ${isZoomedOut ? 'p-0.5' : 'p-1'}`}>
+                                    <IconPlus />
+                                </span>
+                                {!isZoomedOut && <span className="truncate">Add new city / travel plan</span>}
+                                {isZoomedOut && <span className="truncate">Add Plan</span>}
+                            </div>
+                        </div>
+
+                        {/* Empty cells for the Add Row */}
+                        {timeline.map((date, i) => (
+                            <div key={`empty-${i}`} className={`border-r border-b border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/20 min-h-[50px] ${isZoomedOut ? 'p-0.5' : 'p-2'}`}></div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const SegmentManager = ({ segments, onAddSegment, onRemoveSegment, onUpdateSegment }) => {
+            const [activeTab, setActiveTab] = useState('city');
+            const [isAdding, setIsAdding] = useState(false);
+
+            const [name, setName] = useState('');
+            const [startDate, setStartDate] = useState('');
+            const [startTime, setStartTime] = useState('');
+            const [endDate, setEndDate] = useState('');
+            const [endTime, setEndTime] = useState('');
+            const [method, setMethod] = useState('flight');
+            const [flightNumber, setFlightNumber] = useState('');
+            const [price, setPrice] = useState('');
+
+            const handleOpenAddForm = () => {
+                if (segments.length > 0) {
+                    const latestSeg = [...segments].sort((a, b) => new Date(`${b.endDate}T${b.endTime || '23:59'}`).getTime() - new Date(`${a.endDate}T${a.endTime || '23:59'}`).getTime())[0];
+                    setStartDate(latestSeg.endDate || '');
+                    setStartTime(latestSeg.endTime || '');
+                    setEndDate(latestSeg.endDate || '');
+                } else {
+                    const todayStr = dateToString(new Date());
+                    setStartDate(todayStr);
+                    setEndDate(todayStr);
+                }
+                setIsAdding(true);
+            };
+
+            const handleAdd = (e) => {
+                e.preventDefault();
+                if (!name || !startDate || !endDate) return;
+
+                const newSeg = {
+                    id: generateId(),
+                    type: activeTab,
+                    name,
+                    startDate,
+                    startTime,
+                    endDate,
+                    endTime,
+                    price: price ? Number(price) : 0,
+                    activities: []
+                };
+
+                if (activeTab === 'transit') {
+                    newSeg.method = method;
+                    newSeg.flightNumber = flightNumber;
+                }
+
+                onAddSegment(newSeg);
+                
+                setName(''); setStartDate(''); setStartTime(''); setEndDate(''); setEndTime(''); setFlightNumber(''); setPrice('');
+                setIsAdding(false);
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-end mb-2">
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Itinerary Details & Activities</h2>
+                        {!isAdding && (
+                            <button onClick={handleOpenAddForm} className="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+                                <IconPlus /> Add to Itinerary
+                            </button>
+                        )}
+                    </div>
+
+                    {isAdding && (
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg border border-indigo-100 dark:border-slate-800 relative animate-fade-in">
+                            <div className="flex gap-4 mb-5 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <button type="button" onClick={() => setActiveTab('city')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
+                                    Add Destination
+                                </button>
+                                <button type="button" onClick={() => setActiveTab('transit')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
+                                    Add Travel / Transit
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {activeTab === 'city' ? (
+                                    <>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City Name</label>
+                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Paris, France" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-in Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-out Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Accommodation Cost ($)</label>
+                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                            <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                                <option value="flight">Flight</option>
+                                                <option value="train">Train</option>
+                                                <option value="bus">Bus</option>
+                                                <option value="car">Car Rental</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Route / Name</label>
+                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. London to Paris" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Departure Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Arrival Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
+                                            <input type="text" value={flightNumber} onChange={e=>setFlightNumber(e.target.value)} placeholder="e.g. BA123" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Cost ($)</label>
+                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
+                                    <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
+                                    <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${activeTab === 'city' ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
+                                        Save {activeTab === 'city' ? 'Destination' : 'Transit'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        {segments.map((segment) => (
+                            <SegmentAccordion 
+                                key={segment.id} 
+                                segment={segment} 
+                                onRemove={() => onRemoveSegment(segment.id)}
+                                onUpdate={(updates) => onUpdateSegment(segment.id, updates)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const SegmentAccordion = ({ segment, onRemove, onUpdate }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const isCity = segment.type === 'city';
+
+            const [isEditing, setIsEditing] = useState(false);
+            const [editName, setEditName] = useState('');
+            const [editStartDate, setEditStartDate] = useState('');
+            const [editStartTime, setEditStartTime] = useState('');
+            const [editEndDate, setEditEndDate] = useState('');
+            const [editEndTime, setEditEndTime] = useState('');
+            const [editMethod, setEditMethod] = useState('flight');
+            const [editFlightNumber, setEditFlightNumber] = useState('');
+            const [editPrice, setEditPrice] = useState('');
+
+            const [actDate, setActDate] = useState(segment.startDate);
+            const [actTime, setActTime] = useState('');
+            const [actName, setActName] = useState('');
+            const [actPrice, setActPrice] = useState('');
+
+            // Keep actDate in sync when segment date changes
+            useEffect(() => {
+                setActDate(segment.startDate);
+            }, [segment.startDate]);
+
+            const startEditing = () => {
+                setEditName(segment.name);
+                setEditStartDate(segment.startDate);
+                setEditStartTime(segment.startTime || '');
+                setEditEndDate(segment.endDate);
+                setEditEndTime(segment.endTime || '');
+                setEditMethod(segment.method || 'flight');
+                setEditFlightNumber(segment.flightNumber || '');
+                setEditPrice(segment.price !== undefined ? segment.price : '');
+                setIsEditing(true);
+            };
+
+            const handleEditSave = (e) => {
+                e.preventDefault();
+                const updates = {
+                    name: editName,
+                    startDate: editStartDate,
+                    startTime: editStartTime,
+                    endDate: editEndDate,
+                    endTime: editEndTime,
+                    price: editPrice ? Number(editPrice) : 0,
+                };
+                if (!isCity) {
+                    updates.method = editMethod;
+                    updates.flightNumber = editFlightNumber;
+                }
+                onUpdate(updates);
+                setIsEditing(false);
+            };
+
+            const handleAddActivity = (e) => {
+                e.preventDefault();
+                if (!actName || !actDate) return;
+
+                if (actDate === segment.startDate && segment.startTime && actTime && actTime < segment.startTime) {
+                    alert(`Activity time cannot be earlier than check-in/arrival (${formatTime(segment.startTime)})`);
+                    return;
+                }
+                if (actDate === segment.endDate && segment.endTime && actTime && actTime > segment.endTime) {
+                    alert(`Activity time cannot be later than check-out/departure (${formatTime(segment.endTime)})`);
+                    return;
+                }
+
+                const newActivity = {
+                    id: generateId(),
+                    date: actDate,
+                    time: actTime,
+                    name: actName,
+                    price: actPrice ? Number(actPrice) : 0
+                };
+
+                const updatedActivities = [...(segment.activities || []), newActivity].sort((a, b) => {
+                    const timeA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+                    const timeB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+                    return timeA - timeB;
+                });
+                
+                onUpdate({ activities: updatedActivities });
+
+                setActName(''); setActPrice(''); setActTime('');
+            };
+
+            const removeActivity = (actId) => {
+                const updatedActivities = segment.activities.filter(a => a.id !== actId);
+                onUpdate({ activities: updatedActivities });
+            };
+
+            const validDates = isCity ? getDaysArray(parseDate(segment.startDate), parseDate(segment.endDate)).map(d => dateToString(d)) : [];
+
+            if (isEditing) {
+                return (
+                    <div>
+                        <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border p-5 ${isCity ? 'border-primary' : 'border-secondary'}`}>
+                            <form onSubmit={handleEditSave} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="col-span-1 md:col-span-2 lg:col-span-4 mb-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                        <IconEdit /> Edit {isCity ? 'Destination' : 'Transit'}
+                                    </h3>
+                                </div>
+                                {isCity ? (
+                                    <>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City Name</label>
+                                            <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-in Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editStartDate} onChange={e=>setEditStartDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-out Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                                <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Accommodation Cost ($)</label>
+                                            <input type="number" min="0" value={editPrice} onChange={e=>setEditPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                            <select value={editMethod} onChange={e=>setEditMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                                <option value="flight">Flight</option>
+                                                <option value="train">Train</option>
+                                                <option value="bus">Bus</option>
+                                                <option value="car">Car Rental</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Route / Name</label>
+                                            <input type="text" required value={editName} onChange={e=>setEditName(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Departure Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editStartDate} onChange={e=>{setEditStartDate(e.target.value); if(!editEndDate) setEditEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={editStartTime} onChange={e=>setEditStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Arrival Date & Time</label>
+                                            <div className="flex gap-2">
+                                                <input type="date" required value={editEndDate} onChange={e=>setEditEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                                <input type="time" value={editEndTime} onChange={e=>setEditEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
+                                            <input type="text" value={editFlightNumber} onChange={e=>setEditFlightNumber(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Cost ($)</label>
+                                            <input type="number" min="0" value={editPrice} onChange={e=>setEditPrice(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                        </div>
+                                    </>
+                                )}
+                                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
+                                    <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
+                                    <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${isCity ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border overflow-hidden ${isCity ? 'border-indigo-100 dark:border-slate-800' : 'border-pink-100 dark:border-slate-800'}`}>
+                    <div className={`p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${isCity ? '' : 'bg-pink-50/30 dark:bg-pink-950/20'}`} onClick={() => setIsOpen(!isOpen)}>
+                        <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 min-w-[40px] rounded-full flex items-center justify-center text-white shadow-sm ${isCity ? 'bg-primary' : 'bg-secondary'}`}>
+                                {isCity ? <IconMapPin /> : (segment.method === 'train' ? <IconTrain className="w-5 h-5 text-white" /> : (segment.method === 'bus' ? <IconBus className="w-5 h-5 text-white" /> : (segment.method === 'car' ? <IconCar className="w-5 h-5 text-white" /> : <IconPlane className="w-5 h-5 text-white" />)))}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{segment.name}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center flex-wrap gap-1">
+                                    <span>{formatDate(parseDate(segment.startDate))} {segment.startTime ? formatTime(segment.startTime) : ''}</span>
+                                    {segment.startDate !== segment.endDate && <span> - {formatDate(parseDate(segment.endDate))}</span>}
+                                    {segment.endTime && <span> {formatTime(segment.endTime)}</span>}
+                                    {!isCity && segment.flightNumber && <span className="ml-2 px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded text-xs font-mono">{segment.flightNumber}</span>}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-3">
+                            {segment.price > 0 && <span className="font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline-block">${segment.price}</span>}
+                            <button onClick={(e) => { e.stopPropagation(); startEditing(); }} className="p-2 text-slate-400 hover:text-primary transition-colors" title="Edit">
+                                <IconEdit />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+                                <IconTrash />
+                            </button>
+                            <div className="text-slate-400 p-2">
+                                {isOpen ? <IconChevronUp /> : <IconChevronDown />}
+                            </div>
+                        </div>
+                    </div>
+
+                    {isOpen && isCity && (
+                        <div className="border-t border-indigo-50 dark:border-slate-800 p-5 bg-slate-50/50 dark:bg-slate-950/40">
+                            <div className="mb-6">
+                                <h4 className="font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    Planned Activities
+                                </h4>
+                                
+                                {segment.activities && segment.activities.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {segment.activities.map(act => (
+                                            <div key={act.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex justify-between items-center shadow-sm">
+                                                <div>
+                                                    <div className="text-xs font-bold text-primary mb-0.5">
+                                                        {formatDate(parseDate(act.date))} {act.time && `• ${formatTime(act.time)}`}
+                                                    </div>
+                                                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200">{act.name}</div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    {act.price > 0 && <span className="text-sm font-bold text-slate-600 dark:text-slate-400">${act.price}</span>}
+                                                    <button onClick={() => removeActivity(act.id)} className="text-slate-400 hover:text-red-500"><IconTrash /></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 italic">No activities planned yet.</p>
+                                )}
+                            </div>
+
+                            <form onSubmit={handleAddActivity} className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Add New Activity</h5>
+                                <div className="flex flex-col md:flex-row gap-3 items-end">
+                                    <div className="w-full md:w-1/5">
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Date</label>
+                                        <select required value={actDate} onChange={e=>setActDate(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary">
+                                            {validDates.map(d => <option key={d} value={d}>{formatDate(parseDate(d))}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="w-full md:w-1/5">
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Time</label>
+                                        <input type="time" value={actTime} onChange={e=>setActTime(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="w-full md:w-2/5">
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity Description</label>
+                                        <input type="text" required value={actName} onChange={e=>setActName(e.target.value)} placeholder="e.g. Museum visit" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="w-full md:w-1/5">
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price ($)</label>
+                                        <input type="number" min="0" value={actPrice} onChange={e=>setActPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded p-2 text-sm outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="w-full md:w-auto mt-2 md:mt-0">
+                                        <button type="submit" className="w-full bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white font-medium text-sm px-4 py-2 rounded transition-colors whitespace-nowrap">
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
