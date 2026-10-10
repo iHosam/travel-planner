@@ -14,9 +14,8 @@ const THEMES = [
   { value: 'dark', label: 'Dark' },
 ];
 
-export function Toolbar({ state, trip, store, actions }) {
+export function Toolbar({ state, trip, store, dispatch, actions }) {
   const { prefs, data } = state;
-  const { dispatch } = store;
   const setPrefs = (patch) => dispatch({ type: 'prefs/set', prefs: patch });
   const hasPlan = Boolean(trip?.segments.length);
 

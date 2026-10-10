@@ -5,7 +5,8 @@ import { formatMoney } from '../domain/money.js';
 import { buildAgenda, TRANSIT_METHODS } from '../domain/trip.js';
 import { cx } from './controls.js';
 import { Icon, segmentIcon } from './icons.js';
-import { html, useMemo } from './lib.js';
+import { html, useLayoutEffect, useMemo, useRef } from './lib.js';
+import { playLayout, revealOnScroll } from './motion.js';
 import { segmentColors } from './timeline.js';
 
 const methodLabel = (segment) => TRANSIT_METHODS.find((method) => method.id === segment.method)?.label ?? 'Travel';
@@ -29,6 +30,9 @@ function describeItem(item) {
 
 export function Agenda({ trip, actions }) {
   const days = useMemo(() => buildAgenda(trip), [trip]);
+  const list = useRef(null);
+  useLayoutEffect(() => revealOnScroll([...list.current.querySelectorAll('.day')]), []);
+  useLayoutEffect(() => playLayout(list.current), [trip]);
   const colors = useMemo(() => segmentColors(trip), [trip]);
   const today = todayISO();
 
@@ -40,7 +44,8 @@ export function Agenda({ trip, actions }) {
         : actions.editSegment(item.segment.id);
     return html`
       <li key=${`${item.kind}:${item.activity?.id ?? item.segment.id}`}>
-        <button type="button" class="agenda-item" style=${`--c:${colors.get(item.segment.id)}`} onClick=${open}>
+        <button type="button" class="agenda-item" data-flip-id=${item.activity?.id ?? `${item.kind}:${item.segment.id}`}
+          style=${`--c:${colors.get(item.segment.id)}`} onClick=${open}>
           <span class="agenda-time">${formatTime(item.time) || 'Any time'}</span>
           <span class=${cx('agenda-marker', icon && 'badge')}>${icon && html`<${Icon} name=${icon} size=${14} />`}</span>
           <span class="agenda-text">
@@ -54,11 +59,11 @@ export function Agenda({ trip, actions }) {
   };
 
   return html`
-    <section class="agenda" aria-label="Day by day">
+    <section class="agenda" aria-label="Day by day" ref=${list}>
       ${days.map(({ date, stays, items }) => {
         const host = stays[stays.length - 1];
         return html`
-          <article key=${date} class=${cx('card', 'day', date === today && 'today')}>
+          <article key=${date} class=${cx('card', 'day', 'spotlight', date === today && 'today')}>
             <header class="day-head">
               <span class="day-num">${formatDay(date, 'day')}</span>
               <span class="day-meta">

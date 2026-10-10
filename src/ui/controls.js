@@ -75,7 +75,7 @@ export function Menu({ label, icon, text, items, align = 'end' }) {
           ? html`<span class="trip-button-text">${text}</span><${Icon} name="chevron" size=${14} />`
           : html`<${Icon} name=${icon} />`}
       </button>
-      ${open && html`<div class=${cx('menu', `align-${align}`)} role="menu" aria-label=${label}>${items.map(renderItem)}</div>`}
+      ${open && html`<div class=${cx('menu', `align-${align}`)} role="menu" aria-label=${label} data-lenis-prevent>${items.map(renderItem)}</div>`}
     </div>
   `;
 }
@@ -90,7 +90,7 @@ export function Sheet({ title, submitLabel = 'Save', onSubmit, onClose, children
   }, []);
 
   return html`
-    <dialog class="sheet" ref=${dialog} aria-label=${title} onClose=${onClose}
+    <dialog class="sheet" ref=${dialog} data-lenis-prevent aria-label=${title} onClose=${onClose}
       onPointerDown=${(event) => {
         pressedBackdrop.current = event.target === dialog.current;
       }}

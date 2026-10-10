@@ -6,6 +6,7 @@ import { checkPlacement, tripRange } from '../domain/trip.js';
 import { cx } from './controls.js';
 import { Icon, segmentIcon } from './icons.js';
 import { html, useEffect, useLayoutEffect, useMemo, useRef, useState } from './lib.js';
+import { playLayout } from './motion.js';
 
 // Zoom is the width of one day in pixels. Below `full` chips lose detail; below `mid` they become bars.
 export const ZOOM = { min: 8, max: 260, detail: 132, full: 104, mid: 44 };
@@ -60,6 +61,8 @@ export function Timeline({ trip, zoom, onZoom, actions }) {
   const detail = dayWidth >= ZOOM.full ? 'full' : dayWidth >= ZOOM.mid ? 'mid' : 'min';
   const live = useRef({});
   live.current = { dayWidth, fitWidth, labelWidth, width };
+
+  useLayoutEffect(() => playLayout(scroller.current), [trip]);
 
   useLayoutEffect(() => {
     const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
@@ -170,7 +173,7 @@ export function Timeline({ trip, zoom, onZoom, actions }) {
     };
     return html`
       <div key=${activity.id} class=${cx('chip', problem && 'warn', drag?.activity.id === activity.id && 'lifted')}
-        role="button" tabindex="0" draggable="true" data-activity=${activity.id}
+        role="button" tabindex="0" draggable="true" data-activity=${activity.id} data-flip-id=${activity.id}
         title=${problem ?? `${activity.name} · drag to another day, or press Alt + ← / →`}
         onClick=${(event) => {
           event.stopPropagation();
@@ -309,7 +312,7 @@ export function Timeline({ trip, zoom, onZoom, actions }) {
           </button>
         </div>
       </div>
-      <div class="tl-scroll" ref=${scroller}>
+      <div class="tl-scroll" ref=${scroller} data-lenis-prevent-horizontal>
         <div class="tl-grid" style=${`--days:${days.length};--label:${labelWidth}px;--day:${zoom === 'fit' ? 0 : zoom}px`}>
           <div class="tl-corner"></div>
           ${days.map(

@@ -14,7 +14,8 @@ import { Toast } from './controls.js';
 import { Editor } from './editor.js';
 import { Globe } from './globe.js';
 import { Icon } from './icons.js';
-import { html, useEffect, useRef, useState } from './lib.js';
+import { html, useEffect, useLayoutEffect, useMemo, useRef, useState } from './lib.js';
+import { captureLayout, enterView, focusIn, holdScroll } from './motion.js';
 import { Summary } from './summary.js';
 import { Timeline } from './timeline.js';
 import { Toolbar } from './toolbar.js';
@@ -25,17 +26,32 @@ function useStore(store) {
   return state;
 }
 
+// Changes after which things on screen glide to their new place instead of jumping.
+const MOVES = new Set(['activity/move', 'activity/save', 'segment/update', 'stay/resize', 'shift/approve', 'shift/dismiss', 'undo', 'redo']);
+
 const editorKey = (editor) => [editor.kind, editor.segmentId, editor.activityId].join(':');
 
 export function App({ store }) {
   const state = useStore(store);
-  const { dispatch } = store;
+  const dispatch = useMemo(
+    () => (action) => {
+      if (MOVES.has(action.type)) captureLayout();
+      store.dispatch(action);
+    },
+    [store],
+  );
   const { prefs } = state;
   const trip = activeTrip(state);
   const [editor, setEditor] = useState(null);
   const [toast, setToast] = useState(null);
   const [reviewing, setReviewing] = useState(false);
   const fileInput = useRef(null);
+  const view = useRef(null);
+  const empty = useRef(null);
+
+  useLayoutEffect(() => enterView(view.current), [prefs.view, trip?.id]);
+  useLayoutEffect(() => focusIn(empty.current?.querySelector('h2')), [trip?.id, trip?.segments.length === 0]);
+  useEffect(() => holdScroll(Boolean(editor)), [editor]);
 
   const notify = (message, extra = {}) => setToast({ id: Date.now(), message, ...extra });
   const offerUndo = (message) =>
@@ -127,7 +143,7 @@ export function App({ store }) {
   const renderTrip = () => {
     if (!trip.segments.length) {
       return html`
-        <div class="card empty">
+        <div class="card empty spotlight" ref=${empty}>
           <span class="empty-icon"><${Icon} name="pin" size=${28} /></span>
           <h2>Where to first?</h2>
           <p>Add a place to stay, then fill in the days.</p>
@@ -148,15 +164,15 @@ export function App({ store }) {
   };
 
   return html`
-    <${Toolbar} state=${state} trip=${trip} store=${store} actions=${actions} />
+    <${Toolbar} state=${state} trip=${trip} store=${store} dispatch=${dispatch} actions=${actions} />
     <main class="page">
       ${trip
         ? html`
             <${Summary} key=${trip.id} trip=${trip} dispatch=${dispatch} actions=${actions} />
-            ${renderTrip()}
+            <div class="view" ref=${view}>${renderTrip()}</div>
           `
         : html`
-            <div class="card empty">
+            <div class="card empty spotlight" ref=${empty}>
               <span class="empty-icon"><${Icon} name="plane" size=${28} /></span>
               <h2>No trips yet</h2>
               <p>Start from scratch, or open the sample to look around.</p>

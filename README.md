@@ -20,6 +20,9 @@ Live: https://ihosam.github.io/travel-planner/
 - **Several trips**, each with its own currency.
 - **Warns, never hides**: an activity left outside its stay is flagged and stays visible.
 - **CSV import/export** (reads WanderPlan v2 files) and **calendar export** (.ics).
+- **Motion with a purpose**: smooth page scrolling, activities and bookings glide to their new day,
+  totals count to their new value, agenda days rise in as you scroll. All of it switches off with
+  the system's "reduce motion" setting.
 - Light and dark appearance, keyboard access (Alt + ←/→ moves a focused activity by a day; ←/→ on a
   stay's edge resizes it; arrow keys and +/− drive the globe).
 
@@ -68,7 +71,11 @@ src/ui/             views (Preact + htm)
   globe-renderer.js   the Earth itself: Canvas 2D, no WebGL, no libraries
   land-mask.js        where the land is (1 bit per square degree, 2 KB gzipped)
   controls.js         generic controls: menu, sheet, segmented control, toast
-vendor/             htm + Preact 3.1.1 standalone (13 KB, Apache-2.0 / MIT), committed, no CDN
+  motion.js           every animation and smooth scrolling; views ask for effects by name
+vendor/             committed, pinned, no CDN at runtime:
+                      htm + Preact 3.1.1 standalone (13 KB)
+                      GSAP 3.15.0: gsap, Flip, ScrollTrigger, SplitText (loaded as classic scripts)
+                      Lenis 1.3.26 (lenis.mjs + lenis.css)
 tests/              unit tests for domain, io and state
 ```
 
@@ -83,6 +90,8 @@ tests/              unit tests for domain, io and state
 | add a rule ("no activity before arrival") | `checkPlacement` / `tripIssues` in `trip.js`. The editor, drag-and-drop and warnings all use them |
 | change what is saved | `src/state/persistence.js` (bump `VERSION` if the shape changes) |
 | change which bookings a resize flags | `resizeStay` in `trip.js` |
+| add or tune an animation | `src/ui/motion.js` (one place, honours reduced motion) |
+| let an area keep native scrolling | add `data-lenis-prevent` to it |
 | restyle the globe | colours and sizes at the top of `ui/globe-renderer.js`; panel tokens under `.globe` in `app.css` |
 
 ## Credits and terms
@@ -92,3 +101,9 @@ tests/              unit tests for domain, io and state
   (CC BY 4.0). Its free tier is for **non-commercial use**; a commercial deployment needs their paid
   plan or another geocoder (swap `src/io/geocode.js`).
 - Icons: Lucide (ISC).
+- Animation: [GSAP](https://gsap.com) under its standard no-charge licence: free in this app as long
+  as users are never charged to use it, and not for building a competing visual animation tool.
+- Smooth scrolling: [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
+- The count-up, blur-in and spotlight effects are our own versions of ideas from
+  [React Bits](https://reactbits.dev); no React Bits code is included (its MIT + Commons Clause
+  licence forbids redistributing ported components).

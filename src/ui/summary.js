@@ -4,7 +4,20 @@ import { formatRange } from '../domain/dates.js';
 import { formatMoney } from '../domain/money.js';
 import { CURRENCIES, tripIssues, tripRange, tripTotals } from '../domain/trip.js';
 import { Icon } from './icons.js';
-import { html, useEffect, useState } from './lib.js';
+import { html, useEffect, useLayoutEffect, useRef, useState } from './lib.js';
+import { blurIn, countTo } from './motion.js';
+
+// A number that counts up to its value, and from there to each new value.
+function CountUp({ value, format = String, formatKey = '' }) {
+  const element = useRef(null);
+  const shown = useRef(0);
+  useLayoutEffect(() => {
+    countTo(element.current, shown.current, value, format);
+    shown.current = value;
+  }, [value, formatKey]);
+  // Text is written by countTo, so Preact never owns (and never fights over) the digits.
+  return html`<span ref=${element} aria-hidden="true"></span><span class="visually-hidden">${format(value)}</span>`;
+}
 
 function TitleInput({ value, onCommit }) {
   const [draft, setDraft] = useState(value);
@@ -31,22 +44,24 @@ export function Summary({ trip, dispatch, actions }) {
   const range = tripRange(trip);
   const issues = tripIssues(trip);
   const money = (amount) => formatMoney(amount, trip.currency);
+  const dates = useRef(null);
+  useLayoutEffect(() => blurIn(dates.current), []);
   const currencies = CURRENCIES.includes(trip.currency) ? CURRENCIES : [trip.currency, ...CURRENCIES];
 
   return html`
     <header class="summary">
       <div class="summary-title">
         <${TitleInput} value=${trip.name} onCommit=${(name) => dispatch({ type: 'trip/update', patch: { name } })} />
-        <p class="summary-dates">${range ? formatRange(range.start, range.end) : 'No dates yet'}</p>
+        <p class="summary-dates" ref=${dates}>${range ? formatRange(range.start, range.end) : 'No dates yet'}</p>
       </div>
       <dl class="stats">
         <div class="stat">
           <dt>Days</dt>
-          <dd>${totals.days}</dd>
+          <dd><${CountUp} value=${totals.days} /></dd>
         </div>
         <div class="stat">
           <dt>Stays</dt>
-          <dd>${totals.cities}</dd>
+          <dd><${CountUp} value=${totals.cities} /></dd>
         </div>
         <div class="stat total">
           <dt>
@@ -56,7 +71,7 @@ export function Summary({ trip, dispatch, actions }) {
               ${currencies.map((code) => html`<option value=${code}>${code}</option>`)}
             </select>
           </dt>
-          <dd>${money(totals.total)}</dd>
+          <dd><${CountUp} value=${totals.total} format=${money} formatKey=${trip.currency} /></dd>
           <dd class="breakdown">
             Stays ${money(totals.stays)} · Travel ${money(totals.travel)} · Activities ${money(totals.activities)}
           </dd>

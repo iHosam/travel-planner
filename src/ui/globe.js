@@ -167,7 +167,7 @@ export function Globe({ trip, dispatch }) {
     : 'Globe. No places from this trip are on it yet.';
 
   return html`
-    <section class="globe" aria-label="Trip on the globe">
+    <section class="globe" aria-label="Trip on the globe" data-lenis-prevent>
       <div class="globe-stage">
         <canvas ref=${canvas} class="globe-canvas" tabindex="0" role="img" aria-label=${`${summary} Arrow keys rotate, plus and minus zoom.`}></canvas>
         <div class="globe-controls" role="group" aria-label="Globe controls">

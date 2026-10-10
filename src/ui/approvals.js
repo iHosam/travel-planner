@@ -4,17 +4,22 @@
 import { formatDay } from '../domain/dates.js';
 import { pendingApprovals } from '../domain/trip.js';
 import { Icon, segmentIcon } from './icons.js';
-import { html } from './lib.js';
+import { html, useLayoutEffect, useRef } from './lib.js';
+import { popIn, pulse } from './motion.js';
 import { segmentColors, signedDays } from './timeline.js';
 
 export function Approvals({ trip, open, onToggle, dispatch }) {
   const pending = pendingApprovals(trip);
+  const panel = useRef(null);
+  const pill = useRef(null);
+  useLayoutEffect(() => popIn(panel.current), [open && pending.length > 0]);
+  useLayoutEffect(() => pulse(pill.current), [pending.length]);
   if (!pending.length) return null;
 
   const count = pending.length === 1 ? '1 change' : `${pending.length} changes`;
   if (!open) {
     return html`
-      <button type="button" class="approvals-pill" onClick=${() => onToggle(true)}>
+      <button type="button" class="approvals-pill" ref=${pill} onClick=${() => onToggle(true)}>
         <${Icon} name="alert" size=${16} /> ${count} awaiting approval
       </button>
     `;
@@ -25,7 +30,7 @@ export function Approvals({ trip, open, onToggle, dispatch }) {
   const bookings = pending.filter((item) => item.segment.type === 'transit').length;
 
   return html`
-    <aside class="approvals" role="dialog" aria-label="Changes awaiting approval">
+    <aside class="approvals" ref=${panel} role="dialog" aria-label="Changes awaiting approval" data-lenis-prevent>
       <header class="approvals-head">
         <strong>${count} awaiting approval</strong>
         <button type="button" class="icon-btn" aria-label="Decide later" title="Decide later" onClick=${() => onToggle(false)}>
