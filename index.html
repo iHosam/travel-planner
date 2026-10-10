@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WanderPlan - Pro Travel Itinerary</title>
+    <title>WanderPlan v2.0 - Pro Travel Itinerary</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
@@ -41,10 +41,16 @@
         .sticky-col { position: sticky; left: 0; z-index: 30; }
         .sticky-header { position: sticky; top: 0; z-index: 10; }
         .sticky-corner { position: sticky; top: 0; left: 0; z-index: 40; }
-
-        /* Explicit right-border color overrides to match activity entry top bars */
         .border-r-primary { border-right-color: #4f46e5 !important; }
         .border-r-secondary { border-right-color: #ec4899 !important; }
+        .cursor-grab { cursor: grab; }
+        .cursor-grabbing { cursor: grabbing; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-toast { animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
@@ -130,24 +136,24 @@
                             inQuotes = !inQuotes;
                         }
                     } else if (char === ',' && !inQuotes) {
-                        result.push(current);
+                        result.push(current.trim());
                         current = '';
                     } else {
                         current += char;
                     }
                 }
-                result.push(current);
+                result.push(current.trim());
                 return result;
-            });
+            }).filter(row => row.length > 1 || (row.length === 1 && row[0] !== ''));
         };
 
-        const escapeCSV = (str) => {
-            if (str === null || str === undefined) return '';
-            const s = String(str);
-            if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-                return `"${s.replace(/"/g, '""')}"`;
+        const escapeCSV = (val) => {
+            if (val === undefined || val === null) return '';
+            const str = String(val);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
             }
-            return s;
+            return str;
         };
 
         const initialSegments = [
@@ -249,52 +255,39 @@
                         alert(`Activity time cannot be later than check-out/departure (${formatTime(segment.endTime)})`);
                         return;
                     }
-                }
 
-                if (config.type === 'edit-segment') {
-                    const updates = {
-                        name: formData.name,
-                        startDate: formData.startDate,
-                        startTime: formData.startTime,
-                        endDate: formData.endDate,
-                        endTime: formData.endTime,
-                        price: formData.price ? Number(formData.price) : 0
-                    };
-                    if (!currentIsCity) {
-                        updates.method = formData.method;
-                        updates.flightNumber = formData.flightNumber;
+                    if (config.type === 'edit-activity') {
+                        const updated = segment.activities.map(a => a.id === config.activityId ? { ...formData, price: Number(formData.price) || 0 } : a).sort((a,b) => {
+                            const timeA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+                            const timeB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+                            return timeA - timeB;
+                        });
+                        onUpdateSegment(segment.id, { activities: updated });
+                    } else {
+                        const newAct = {
+                            id: generateId(),
+                            ...formData,
+                            price: Number(formData.price) || 0
+                        };
+                        const updated = [...(segment.activities || []), newAct].sort((a,b) => {
+                            const timeA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+                            const timeB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+                            return timeA - timeB;
+                        });
+                        onUpdateSegment(segment.id, { activities: updated });
                     }
-                    onUpdateSegment(segment.id, updates);
-                } else if (config.type === 'add-segment') {
-                    const newSeg = {
-                        id: generateId(),
-                        type: formData.type,
-                        name: formData.name,
-                        startDate: formData.startDate,
-                        startTime: formData.startTime,
-                        endDate: formData.endDate,
-                        endTime: formData.endTime,
-                        price: formData.price ? Number(formData.price) : 0,
-                        activities: []
-                    };
-                    if (!currentIsCity) {
-                        newSeg.method = formData.method || 'flight';
-                        newSeg.flightNumber = formData.flightNumber;
-                    }
-                    onAddSegment(newSeg);
-                } else if (config.type === 'edit-activity') {
-                    const updatedActivities = segment.activities.map(a => 
-                        a.id === config.activityId ? { ...a, ...formData, price: Number(formData.price)||0 } : a
-                    );
-                    onUpdateSegment(segment.id, { 
-                        activities: updatedActivities.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime())
+                } else if (config.type === 'edit-segment') {
+                    onUpdateSegment(segment.id, {
+                        ...formData,
+                        price: Number(formData.price) || 0
                     });
-                } else if (config.type === 'add-activity') {
-                    const newAct = { ...formData, id: generateId(), price: Number(formData.price)||0 };
-                    const updatedActivities = [...(segment.activities || []), newAct].sort((a, b) => 
-                        new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime())
-                    ;
-                    onUpdateSegment(segment.id, { activities: updatedActivities });
+                } else if (config.type === 'add-segment') {
+                    onAddSegment({
+                        id: generateId(),
+                        ...formData,
+                        price: Number(formData.price) || 0,
+                        activities: []
+                    });
                 }
                 onClose();
             };
@@ -427,7 +420,19 @@
             const [isZoomedOut, setIsZoomedOut] = useState(false);
             const [modalConfig, setModalConfig] = useState(null);
             const [isDarkMode, setIsDarkMode] = useState(false);
+            const [toast, setToast] = useState(null);
             const fileInputRef = React.useRef(null);
+
+            const showToast = (message, type = 'success') => {
+                setToast({ message, type, id: Date.now() });
+            };
+
+            useEffect(() => {
+                if (toast) {
+                    const timer = setTimeout(() => setToast(null), 3500);
+                    return () => clearTimeout(timer);
+                }
+            }, [toast]);
 
             useEffect(() => {
                 if (isDarkMode) {
@@ -495,6 +500,70 @@
                         return timeA - timeB;
                     });
                 });
+            };
+
+            const moveActivity = (sourceSegmentId, targetSegmentId, activityId, targetDate) => {
+                const sourceSeg = segments.find(s => s.id === sourceSegmentId);
+                if (!sourceSeg) return false;
+                const act = sourceSeg.activities?.find(a => a.id === activityId);
+                if (!act) return false;
+
+                if (sourceSegmentId === targetSegmentId && act.date === targetDate) {
+                    return true;
+                }
+
+                const targetSeg = segments.find(s => s.id === targetSegmentId);
+                if (!targetSeg || targetSeg.type !== 'city') {
+                    showToast('Activities can only be placed on destination cities', 'error');
+                    return false;
+                }
+
+                // Date bounds check
+                if (targetDate < targetSeg.startDate || targetDate > targetSeg.endDate) {
+                    showToast(`Cannot move activity: Date (${formatDate(parseDate(targetDate))}) is outside ${targetSeg.name}'s stay (${formatDate(parseDate(targetSeg.startDate))} - ${formatDate(parseDate(targetSeg.endDate))})`, 'error');
+                    return false;
+                }
+
+                // Time restriction on check-in day
+                if (targetDate === targetSeg.startDate && targetSeg.startTime && act.time && act.time < targetSeg.startTime) {
+                    showToast(`Cannot move activity: Time (${formatTime(act.time)}) is earlier than check-in / arrival (${formatTime(targetSeg.startTime)})`, 'error');
+                    return false;
+                }
+
+                // Time restriction on check-out day
+                if (targetDate === targetSeg.endDate && targetSeg.endTime && act.time && act.time > targetSeg.endTime) {
+                    showToast(`Cannot move activity: Time (${formatTime(act.time)}) is later than check-out / departure (${formatTime(targetSeg.endTime)})`, 'error');
+                    return false;
+                }
+
+                const updatedAct = { ...act, date: targetDate };
+
+                setSegments(prev => {
+                    return prev.map(seg => {
+                        if (seg.id === sourceSegmentId && seg.id === targetSegmentId) {
+                            const updatedActs = seg.activities.map(a => a.id === activityId ? updatedAct : a).sort((a, b) => {
+                                const timeA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+                                const timeB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+                                return timeA - timeB;
+                            });
+                            return { ...seg, activities: updatedActs };
+                        } else if (seg.id === sourceSegmentId) {
+                            return { ...seg, activities: seg.activities.filter(a => a.id !== activityId) };
+                        } else if (seg.id === targetSegmentId) {
+                            const updatedActs = [...(seg.activities || []), updatedAct].sort((a, b) => {
+                                const timeA = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+                                const timeB = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+                                return timeA - timeB;
+                            });
+                            return { ...seg, activities: updatedActs };
+                        }
+                        return seg;
+                    });
+                });
+
+                const destInfo = sourceSegmentId === targetSegmentId ? '' : ` in ${targetSeg.name}`;
+                showToast(`Moved "${act.name}" to ${formatDate(parseDate(targetDate))}${destInfo}!`, 'success');
+                return true;
             };
 
             const handleExportCSV = () => {
@@ -670,7 +739,10 @@
                     <header className="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-40">
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <div className="bg-primary text-white p-2 rounded-lg"><IconPlane className="w-5 h-5" /></div>
-                            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">WanderPlan</h1>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">WanderPlan</h1>
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded uppercase tracking-wide">v2.0</span>
+                            </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                             <div className="flex items-center gap-2 mr-auto sm:mr-4">
@@ -706,18 +778,34 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
                                     Trip Timeline
                                 </h2>
-                                {timeline.length > 0 && (
-                                    <button 
-                                        onClick={() => setIsZoomedOut(!isZoomedOut)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-medium"
-                                    >
-                                        {isZoomedOut ? <><IconZoomIn /> Zoom In</> : <><IconZoomOut /> Zoom Out</>}
-                                    </button>
-                                )}
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs text-slate-400 dark:text-slate-500 hidden md:inline-flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M7 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM7 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM7 16a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 16a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                        </svg>
+                                        Drag activity cards to change days
+                                    </span>
+                                    {timeline.length > 0 && (
+                                        <button 
+                                            onClick={() => setIsZoomedOut(!isZoomedOut)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-medium"
+                                        >
+                                            {isZoomedOut ? <><IconZoomIn /> Zoom In</> : <><IconZoomOut /> Zoom Out</>}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             
                             {timeline.length > 0 ? (
-                                <GanttChart timeline={timeline} segments={segments} isZoomedOut={isZoomedOut} onOpenModal={setModalConfig} onAddSegment={addSegment} />
+                                <GanttChart 
+                                    timeline={timeline} 
+                                    segments={segments} 
+                                    isZoomedOut={isZoomedOut} 
+                                    onOpenModal={setModalConfig} 
+                                    onAddSegment={addSegment} 
+                                    onMoveActivity={moveActivity}
+                                    onShowToast={showToast}
+                                />
                             ) : (
                                 <div className="p-12 text-center text-slate-400">
                                     <IconMapPin className="mx-auto w-12 h-12 mb-3 opacity-50" />
@@ -748,14 +836,43 @@
                             onAddSegment={addSegment}
                         />
                     )}
+
+                    {/* Toast Notification */}
+                    {toast && (
+                        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border backdrop-blur-md animate-toast ${
+                            toast.type === 'error' 
+                                ? 'bg-white/95 dark:bg-slate-900/95 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300' 
+                                : 'bg-white/95 dark:bg-slate-900/95 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                        }`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                                toast.type === 'error' ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400' : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
+                            }`}>
+                                {toast.type === 'error' ? <IconX /> : (
+                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                )}
+                            </div>
+                            <div className="text-sm font-semibold max-w-sm">
+                                {toast.message}
+                            </div>
+                            <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <IconX />
+                            </button>
+                        </div>
+                    )}
                 </div>
             );
         };
 
-        const GanttChart = ({ timeline, segments, isZoomedOut, onOpenModal, onAddSegment }) => {
+        const GanttChart = ({ timeline, segments, isZoomedOut, onOpenModal, onAddSegment, onMoveActivity, onShowToast }) => {
             const firstCol = isZoomedOut ? '100px' : '200px';
             const dayCols = isZoomedOut ? `repeat(${timeline.length}, minmax(0, 1fr))` : `repeat(${timeline.length}, minmax(140px, 1fr))` ;
             const gridTemplateColumns = `${firstCol} ${dayCols}`;
+
+            const [draggedItem, setDraggedItem] = useState(null);
+            const [dragOverCell, setDragOverCell] = useState(null);
+            const dragJustEndedRef = React.useRef(false);
 
             const getTransitIcon = (method) => {
                 switch(method) {
@@ -764,6 +881,36 @@
                     case 'bus': return <IconBus className="w-5 h-5 text-emerald-500" />;
                     default: return <IconPlane className="w-5 h-5 text-secondary" />;
                 }
+            };
+
+            const validateDrop = (targetSeg, targetDateStr, dragged) => {
+                if (!dragged) return { valid: false, reason: '' };
+                if (targetSeg.type !== 'city') {
+                    return { valid: false, reason: 'Activities cannot be placed on transit rows' };
+                }
+                // Date bounds check
+                if (targetDateStr < targetSeg.startDate || targetDateStr > targetSeg.endDate) {
+                    return { 
+                        valid: false, 
+                        reason: `Date is outside ${targetSeg.name}'s stay (${formatDate(parseDate(targetSeg.startDate))} - ${formatDate(parseDate(targetSeg.endDate))})` 
+                    };
+                }
+                // Time check on check-in day
+                const act = dragged.activity;
+                if (targetDateStr === targetSeg.startDate && targetSeg.startTime && act.time && act.time < targetSeg.startTime) {
+                    return { 
+                        valid: false, 
+                        reason: `Activity time (${formatTime(act.time)}) is earlier than check-in (${formatTime(targetSeg.startTime)})` 
+                    };
+                }
+                // Time check on check-out day
+                if (targetDateStr === targetSeg.endDate && targetSeg.endTime && act.time && act.time > targetSeg.endTime) {
+                    return { 
+                        valid: false, 
+                        reason: `Activity time (${formatTime(act.time)}) is later than check-out (${formatTime(targetSeg.endTime)})` 
+                    };
+                }
+                return { valid: true, reason: '' };
             };
 
             return (
@@ -818,18 +965,90 @@
                                     {/* Day Columns for this row */}
                                     {timeline.map((date, i) => {
                                         const currentDateStr = dateToString(date);
-                                        const isWithinSegment = date >= parseDate(segment.startDate) && date <= parseDate(segment.endDate);
+                                        const isWithinSegment = currentDateStr >= segment.startDate && currentDateStr <= segment.endDate;
+                                        const isOverThisCell = dragOverCell?.segmentId === segment.id && dragOverCell?.dateStr === currentDateStr;
+                                        const isValidDrop = isOverThisCell && dragOverCell?.isValid;
+                                        const isInvalidDrop = isOverThisCell && !dragOverCell?.isValid;
+
                                         const dayActivities = segment.type === 'city' && segment.activities 
                                             ? segment.activities.filter(a => a.date === currentDateStr).sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'))
                                             : [];
 
+                                        let cellClass = `border-r border-b border-slate-100 dark:border-slate-800 relative min-h-[80px] overflow-hidden transition-all ${isZoomedOut ? 'p-0.5' : 'p-2'} `;
+                                        if (isValidDrop) {
+                                            cellClass += 'ring-2 ring-inset ring-primary bg-indigo-100/70 dark:bg-indigo-950/70 shadow-inner ';
+                                        } else if (isInvalidDrop) {
+                                            cellClass += 'ring-2 ring-inset ring-rose-500 bg-rose-100/60 dark:bg-rose-950/50 cursor-not-allowed ';
+                                        } else if (isWithinSegment) {
+                                            if (isTransit) {
+                                                cellClass += 'bg-pink-50/20 dark:bg-pink-950/10 ';
+                                            } else {
+                                                cellClass += draggedItem 
+                                                    ? 'bg-indigo-50/40 dark:bg-indigo-950/30 hover:bg-indigo-100/60 cursor-pointer ring-1 ring-inset ring-indigo-200/40 dark:ring-indigo-800/30 ' 
+                                                    : 'bg-indigo-50/20 dark:bg-indigo-950/20 cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 transition-colors ';
+                                            }
+                                        } else {
+                                            cellClass += 'bg-slate-50/20 dark:bg-slate-950/20 ';
+                                        }
+
                                         return (
                                             <div key={`${segment.id}-${i}`} 
-                                                 onClick={isWithinSegment && !isTransit ? () => onOpenModal({ type: 'add-activity', segmentId: segment.id, date: currentDateStr }) : undefined}
-                                                 className={`border-r border-b border-slate-100 dark:border-slate-800 relative min-h-[80px] overflow-hidden
-                                                    ${isZoomedOut ? 'p-0.5' : 'p-2'}
-                                                    ${isWithinSegment ? (isTransit ? 'bg-pink-50/20 dark:bg-pink-950/10' : 'bg-indigo-50/20 dark:bg-indigo-950/20 cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 transition-colors') : 'bg-slate-50/20 dark:bg-slate-950/20'}
-                                                 `}
+                                                 onDragOver={(e) => {
+                                                     if (!draggedItem) return;
+                                                     e.preventDefault();
+                                                     const validation = validateDrop(segment, currentDateStr, draggedItem);
+                                                     if (validation.valid) {
+                                                         e.dataTransfer.dropEffect = 'move';
+                                                     } else {
+                                                         e.dataTransfer.dropEffect = 'none';
+                                                     }
+                                                     if (dragOverCell?.segmentId !== segment.id || dragOverCell?.dateStr !== currentDateStr) {
+                                                         setDragOverCell({
+                                                             segmentId: segment.id,
+                                                             dateStr: currentDateStr,
+                                                             isValid: validation.valid,
+                                                             reason: validation.reason
+                                                         });
+                                                     }
+                                                 }}
+                                                 onDragLeave={(e) => {
+                                                     if (e.currentTarget.contains(e.relatedTarget)) return;
+                                                     if (dragOverCell?.segmentId === segment.id && dragOverCell?.dateStr === currentDateStr) {
+                                                         setDragOverCell(null);
+                                                     }
+                                                 }}
+                                                 onDrop={(e) => {
+                                                     e.preventDefault();
+                                                     setDragOverCell(null);
+                                                     let dragData = draggedItem;
+                                                     if (!dragData) {
+                                                         try {
+                                                             const raw = e.dataTransfer.getData('text/plain');
+                                                             if (raw) dragData = JSON.parse(raw);
+                                                         } catch(err) {}
+                                                     }
+                                                     if (!dragData) return;
+
+                                                     const validation = validateDrop(segment, currentDateStr, dragData);
+                                                     if (!validation.valid) {
+                                                         if (onShowToast) onShowToast(validation.reason, 'error');
+                                                         setDraggedItem(null);
+                                                         return;
+                                                     }
+
+                                                     if (dragData.segmentId === segment.id && dragData.activity.date === currentDateStr) {
+                                                         setDraggedItem(null);
+                                                         return;
+                                                     }
+
+                                                     onMoveActivity(dragData.segmentId, segment.id, dragData.activityId, currentDateStr);
+                                                     setDraggedItem(null);
+                                                 }}
+                                                 onClick={isWithinSegment && !isTransit ? () => {
+                                                     if (dragJustEndedRef.current) return;
+                                                     onOpenModal({ type: 'add-activity', segmentId: segment.id, date: currentDateStr });
+                                                 } : undefined}
+                                                 className={cellClass}
                                                  title={isWithinSegment && !isTransit && !isZoomedOut ? "Click empty area to add activity" : undefined}
                                             >
                                                 {isWithinSegment && (
@@ -838,25 +1057,81 @@
 
                                                 {isWithinSegment && dayActivities.length > 0 && (
                                                     <div className={`flex flex-col gap-1 w-full relative z-20 ${isZoomedOut ? 'mt-1' : 'mt-2'}`}>
-                                                        {dayActivities.map(act => (
-                                                            <div 
-                                                                key={act.id} 
-                                                                onClick={(e) => { e.stopPropagation(); onOpenModal({ type: 'edit-activity', segmentId: segment.id, activityId: act.id }); }}
-                                                                className={`bg-white dark:bg-slate-800 border shadow-sm rounded overflow-hidden w-full cursor-pointer transition-all hover:shadow-md
-                                                                    ${isZoomedOut ? 'p-0.5 border-indigo-50 dark:border-slate-700 hover:border-primary/50' : 'p-1.5 border-indigo-100 dark:border-slate-700 hover:border-primary'}
-                                                                `}
-                                                                title="Click to edit activity"
-                                                            >
-                                                                {act.time && <div className={`text-primary font-bold truncate ${isZoomedOut ? 'mb-0 text-[8px]' : 'mb-0.5'}`}>{formatTime(act.time)}</div>}
-                                                                <div className={`font-medium text-slate-700 dark:text-slate-200 leading-tight truncate ${isZoomedOut ? 'text-[8px]' : ''}`}>{act.name}</div>
-                                                                {!isZoomedOut && act.price > 0 && <div className="text-indigo-500 dark:text-indigo-400 font-semibold mt-0.5">${act.price}</div>}
-                                                            </div>
-                                                        ))}
+                                                        {dayActivities.map(act => {
+                                                            const isThisActDragged = draggedItem?.activityId === act.id;
+
+                                                            return (
+                                                                <div 
+                                                                    key={act.id} 
+                                                                    draggable={true}
+                                                                    onDragStart={(e) => {
+                                                                        e.dataTransfer.setData('text/plain', JSON.stringify({ segmentId: segment.id, activityId: act.id, activity: act }));
+                                                                        e.dataTransfer.effectAllowed = 'move';
+                                                                        setDraggedItem({ segmentId: segment.id, activityId: act.id, activity: act });
+                                                                    }}
+                                                                    onDragEnd={() => {
+                                                                        setDraggedItem(null);
+                                                                        setDragOverCell(null);
+                                                                        dragJustEndedRef.current = true;
+                                                                        setTimeout(() => { dragJustEndedRef.current = false; }, 250);
+                                                                    }}
+                                                                    onClick={(e) => { 
+                                                                        e.stopPropagation(); 
+                                                                        if (dragJustEndedRef.current) return;
+                                                                        onOpenModal({ type: 'edit-activity', segmentId: segment.id, activityId: act.id }); 
+                                                                    }}
+                                                                    className={`bg-white dark:bg-slate-800 border shadow-sm rounded overflow-hidden w-full cursor-grab active:cursor-grabbing transition-all select-none group
+                                                                        ${isThisActDragged ? 'opacity-30 scale-95 border-dashed border-primary ring-2 ring-primary/50' : 'hover:shadow-md hover:border-primary'}
+                                                                        ${isZoomedOut ? 'p-0.5 border-indigo-50 dark:border-slate-700' : 'p-1.5 border-indigo-100 dark:border-slate-700'}
+                                                                    `}
+                                                                    title="Drag to move to another day • Click to edit"
+                                                                >
+                                                                    <div className="flex items-start justify-between gap-1 pointer-events-none">
+                                                                        <div className="min-w-0 flex-1">
+                                                                            {act.time && (
+                                                                                <div className={`text-primary font-bold truncate ${isZoomedOut ? 'mb-0 text-[8px]' : 'mb-0.5'}`}>
+                                                                                    {formatTime(act.time)}
+                                                                                </div>
+                                                                            )}
+                                                                            <div className={`font-medium text-slate-800 dark:text-slate-200 leading-tight truncate ${isZoomedOut ? 'text-[8px]' : ''}`}>
+                                                                                {act.name}
+                                                                            </div>
+                                                                            {!isZoomedOut && act.price > 0 && (
+                                                                                <div className="text-indigo-500 dark:text-indigo-400 font-semibold mt-0.5">
+                                                                                    ${act.price}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        {!isZoomedOut && (
+                                                                            <div className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors mt-0.5" title="Drag handle">
+                                                                                <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                                    <path d="M7 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM7 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM7 16a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM16 16a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                                                                </svg>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {/* Drop Indicator */}
+                                                {isValidDrop && (
+                                                    <div className={`rounded border-2 border-dashed border-primary bg-primary/10 text-primary flex items-center justify-center font-bold animate-pulse ${isZoomedOut ? 'mt-0.5 p-0.5 text-[8px]' : 'mt-1.5 p-1 text-[10px]'}`}>
+                                                        {isZoomedOut ? 'Drop' : '+ Move here'}
+                                                    </div>
+                                                )}
+
+                                                {/* Invalid Drop / Restriction Notice */}
+                                                {isInvalidDrop && (
+                                                    <div className={`rounded border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/60 text-rose-700 dark:text-rose-200 font-medium text-center leading-tight shadow-sm ${isZoomedOut ? 'mt-0.5 p-0.5 text-[7px]' : 'mt-1.5 p-1 text-[9px]'}`}>
+                                                        {isZoomedOut ? 'Restricted' : dragOverCell?.reason}
                                                     </div>
                                                 )}
 
                                                 {isWithinSegment && isTransit && (
-                                                    <div className="h-full flex items-center justify-center opacity-80">
+                                                    <div className="h-full flex items-center justify-center opacity-80 pointer-events-none">
                                                         {getTransitIcon(segment.method)}
                                                     </div>
                                                 )}
@@ -951,110 +1226,88 @@
                 }
 
                 onAddSegment(newSeg);
-                
                 setName(''); setStartDate(''); setStartTime(''); setEndDate(''); setEndTime(''); setFlightNumber(''); setPrice('');
                 setIsAdding(false);
             };
 
             return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-end mb-2">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Itinerary Details & Activities</h2>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <IconMapPin className="text-primary w-5 h-5" /> Itinerary Builder
+                            </h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage all destinations and travel legs in order.</p>
+                        </div>
                         {!isAdding && (
-                            <button onClick={handleOpenAddForm} className="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
-                                <IconPlus /> Add to Itinerary
+                            <button onClick={handleOpenAddForm} className="flex items-center gap-2 bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm self-start sm:self-auto">
+                                <IconPlus /> Add Leg / City
                             </button>
                         )}
                     </div>
 
                     {isAdding && (
-                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg border border-indigo-100 dark:border-slate-800 relative animate-fade-in">
-                            <div className="flex gap-4 mb-5 border-b border-slate-200 dark:border-slate-800 pb-2">
-                                <button type="button" onClick={() => setActiveTab('city')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
-                                    Add Destination
+                        <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 mb-6">
+                            <div className="flex gap-4 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
+                                <button type="button" onClick={() => setActiveTab('city')} className={`pb-2 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'city' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
+                                    Destination City
                                 </button>
-                                <button type="button" onClick={() => setActiveTab('transit')} className={`pb-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
-                                    Add Travel / Transit
+                                <button type="button" onClick={() => setActiveTab('transit')} className={`pb-2 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'transit' ? 'border-secondary text-secondary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}>
+                                    Travel / Transit Leg
                                 </button>
                             </div>
 
-                            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {activeTab === 'city' ? (
-                                    <>
-                                        <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City Name</label>
-                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Paris, France" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-in Date & Time</label>
-                                            <div className="flex gap-2">
-                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Check-out Date & Time</label>
-                                            <div className="flex gap-2">
-                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary px-1" />
-                                            </div>
-                                        </div>
-                                        <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Accommodation Cost ($)</label>
-                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-primary" />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
-                                            <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
-                                                <option value="flight">Flight</option>
-                                                <option value="train">Train</option>
-                                                <option value="bus">Bus</option>
-                                                <option value="car">Car Rental</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Route / Name</label>
-                                            <input type="text" required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. London to Paris" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Departure Date & Time</label>
-                                            <div className="flex gap-2">
-                                                <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                                <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Arrival Date & Time</label>
-                                            <div className="flex gap-2">
-                                                <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className="w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                                <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className="w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary px-1" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
-                                            <input type="text" value={flightNumber} onChange={e=>setFlightNumber(e.target.value)} placeholder="e.g. BA123" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Cost ($)</label>
-                                            <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} placeholder="0" className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
-                                        </div>
-                                    </>
+                            <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {activeTab === 'transit' && (
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Method</label>
+                                        <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary">
+                                            <option value="flight">Flight</option>
+                                            <option value="train">Train</option>
+                                            <option value="bus">Bus</option>
+                                            <option value="car">Car Rental</option>
+                                        </select>
+                                    </div>
                                 )}
-
-                                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
+                                <div className={activeTab === 'city' ? 'sm:col-span-2' : ''}>
+                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{activeTab === 'city' ? 'City Name' : 'Route / Name'}</label>
+                                    <input type="text" required placeholder={activeTab === 'city' ? "e.g. Paris" : "e.g. London to Paris"} value={name} onChange={e=>setName(e.target.value)} className={`w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'}`} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{activeTab === 'city' ? 'Check-in Date & Time' : 'Departure Date & Time'}</label>
+                                    <div className="flex gap-2">
+                                        <input type="date" required value={startDate} onChange={e=>{setStartDate(e.target.value); if(!endDate) setEndDate(e.target.value);}} className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'}`} />
+                                        <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'} px-1`} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{activeTab === 'city' ? 'Check-out Date & Time' : 'Arrival Date & Time'}</label>
+                                    <div className="flex gap-2">
+                                        <input type="date" required value={endDate} onChange={e=>setEndDate(e.target.value)} className={`w-2/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'}`} />
+                                        <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} className={`w-1/3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'} px-1`} />
+                                    </div>
+                                </div>
+                                {activeTab === 'transit' && (
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Flight/Train Number (Opt)</label>
+                                        <input type="text" placeholder="e.g. BA 304" value={flightNumber} onChange={e=>setFlightNumber(e.target.value)} className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:border-secondary" />
+                                    </div>
+                                )}
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{activeTab === 'city' ? 'Accommodation Cost ($)' : 'Total Cost ($)'}</label>
+                                    <input type="number" min="0" placeholder="0" value={price} onChange={e=>setPrice(e.target.value)} className={`w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 outline-none ${activeTab === 'city' ? 'focus:border-primary' : 'focus:border-secondary'}`} />
+                                </div>
+                                <div className="sm:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
                                     <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancel</button>
                                     <button type="submit" className={`px-6 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${activeTab === 'city' ? 'bg-primary hover:bg-indigo-700' : 'bg-secondary hover:bg-pink-600'}`}>
-                                        Save {activeTab === 'city' ? 'Destination' : 'Transit'}
+                                        Add {activeTab === 'city' ? 'City' : 'Transit'}
                                     </button>
                                 </div>
                             </form>
                         </div>
                     )}
 
-                    <div className="space-y-4">
+                    <div className="flex flex-col gap-4">
                         {segments.map((segment) => (
                             <SegmentAccordion 
                                 key={segment.id} 
@@ -1070,27 +1323,31 @@
 
         const SegmentAccordion = ({ segment, onRemove, onUpdate }) => {
             const [isOpen, setIsOpen] = useState(false);
-            const isCity = segment.type === 'city';
-
             const [isEditing, setIsEditing] = useState(false);
-            const [editName, setEditName] = useState('');
-            const [editStartDate, setEditStartDate] = useState('');
-            const [editStartTime, setEditStartTime] = useState('');
-            const [editEndDate, setEditEndDate] = useState('');
-            const [editEndTime, setEditEndTime] = useState('');
-            const [editMethod, setEditMethod] = useState('flight');
-            const [editFlightNumber, setEditFlightNumber] = useState('');
-            const [editPrice, setEditPrice] = useState('');
 
-            const [actDate, setActDate] = useState(segment.startDate);
-            const [actTime, setActTime] = useState('');
+            // Activity Form State
             const [actName, setActName] = useState('');
             const [actPrice, setActPrice] = useState('');
+            const [actDate, setActDate] = useState(segment.startDate);
+            const [actTime, setActTime] = useState('');
 
-            // Keep actDate in sync when segment date changes
             useEffect(() => {
-                setActDate(segment.startDate);
-            }, [segment.startDate]);
+                if (segment.startDate && (!actDate || actDate < segment.startDate || actDate > segment.endDate)) {
+                    setActDate(segment.startDate);
+                }
+            }, [segment.startDate, segment.endDate]);
+
+            // Edit Segment State
+            const [editName, setEditName] = useState(segment.name);
+            const [editStartDate, setEditStartDate] = useState(segment.startDate);
+            const [editStartTime, setEditStartTime] = useState(segment.startTime || '');
+            const [editEndDate, setEditEndDate] = useState(segment.endDate);
+            const [editEndTime, setEditEndTime] = useState(segment.endTime || '');
+            const [editMethod, setEditMethod] = useState(segment.method || 'flight');
+            const [editFlightNumber, setEditFlightNumber] = useState(segment.flightNumber || '');
+            const [editPrice, setEditPrice] = useState(segment.price !== undefined ? segment.price : '');
+
+            const isCity = segment.type === 'city';
 
             const startEditing = () => {
                 setEditName(segment.name);
