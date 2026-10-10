@@ -1,0 +1,10 @@
+{
+  "name": "wanderplan",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A calm, fast trip planner. No build step.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

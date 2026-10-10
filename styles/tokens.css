@@ -1,0 +1,93 @@
+/* Design tokens. Every colour, radius and shadow in the app comes from here. */
+
+:root {
+  color-scheme: light dark;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui,
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --separator: rgba(60, 60, 67, 0.16);
+  --hairline: rgba(60, 60, 67, 0.08);
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+  --weekend: rgba(118, 118, 128, 0.045);
+
+  --accent: #0071e3;
+  --accent-ink: #0066cc;
+  --on-accent: #ffffff;
+  --danger: #d70015;
+  --warning: #b25000;
+  --warning-fill: rgba(255, 149, 0, 0.14);
+
+  --stay-1: #0a84ff;
+  --stay-2: #ff9500;
+  --stay-3: #30b350;
+  --stay-4: #af52de;
+  --stay-5: #ff2d55;
+  --stay-6: #1fa8b8;
+  --transit: #8e8e93;
+
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 20px;
+  --shadow-card: 0 0 0 0.5px var(--hairline), 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.04);
+  --shadow-chip: 0 0 0 0.5px var(--separator), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 0 0 0.5px var(--separator), 0 12px 40px rgba(0, 0, 0, 0.18);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --elevated: #2c2c2e;
+    --text: #f5f5f7;
+    --text-2: #a1a1a6;
+    --separator: rgba(120, 120, 128, 0.36);
+    --hairline: rgba(120, 120, 128, 0.2);
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-strong: rgba(118, 118, 128, 0.36);
+    --weekend: rgba(255, 255, 255, 0.03);
+    --accent: #0a84ff;
+    --accent-ink: #409cff;
+    --danger: #ff453a;
+    --warning: #ffb340;
+    --warning-fill: rgba(255, 159, 10, 0.2);
+    --shadow-card: 0 0 0 0.5px var(--hairline);
+    --shadow-chip: 0 0 0 0.5px var(--separator);
+    --shadow-pop: 0 0 0 0.5px var(--separator), 0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --elevated: #2c2c2e;
+  --text: #f5f5f7;
+  --text-2: #a1a1a6;
+  --separator: rgba(120, 120, 128, 0.36);
+  --hairline: rgba(120, 120, 128, 0.2);
+  --fill: rgba(118, 118, 128, 0.24);
+  --fill-strong: rgba(118, 118, 128, 0.36);
+  --weekend: rgba(255, 255, 255, 0.03);
+  --accent: #0a84ff;
+  --accent-ink: #409cff;
+  --danger: #ff453a;
+  --warning: #ffb340;
+  --warning-fill: rgba(255, 159, 10, 0.2);
+  --shadow-card: 0 0 0 0.5px var(--hairline);
+  --shadow-chip: 0 0 0 0.5px var(--separator);
+  --shadow-pop: 0 0 0 0.5px var(--separator), 0 12px 40px rgba(0, 0, 0, 0.6);
+}
